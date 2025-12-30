@@ -8,49 +8,40 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f6f9; }
         .sidebar { min-height: 100vh; background: #2c3e50; color: white; }
-        .nav-link { color: rgba(255,255,255,0.8); cursor: pointer; margin-bottom: 5px; }
-        .nav-link:hover, .nav-link.active { color: white; background: rgba(255,255,255,0.2); border-radius: 5px; font-weight: bold; }
-        .card-counter { box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin: 10px 0; padding: 20px; background-color: #fff; height: 120px; border-radius: 8px; position: relative; overflow: hidden; }
-        .card-counter i { font-size: 4em; opacity: 0.1; position: absolute; right: 15px; top: 15px; }
-        .count-numbers { font-size: 32px; font-weight: bold; display: block; }
-        .count-name { opacity: 0.8; font-size: 14px; text-transform: uppercase; }
+        .nav-link { color: rgba(255,255,255,0.8); cursor: pointer; }
+        .nav-link:hover, .nav-link.active { color: white; background: rgba(255,255,255,0.1); border-radius: 5px; }
+        .card-counter { box-shadow: 2px 2px 10px #DADADA; margin: 5px; padding: 20px 10px; background-color: #fff; height: 100px; border-radius: 5px; transition: .3s linear all; }
+        .card-counter:hover { box-shadow: 4px 4px 20px #DADADA; transform: scale(1.02); }
+        .card-counter i { font-size: 5em; opacity: 0.2; position: absolute; right: 10px; top: 10px; }
+        .bg-primary-light { background-color: #e3f2fd; }
+        .hidden { display: none; }
+        /* Cores específicas para decisões */
+        .border-decisao { border-left: 5px solid #007bff; }
+        .border-nascimento { border-left: 5px solid #28a745; }
+        .border-batismo { border-left: 5px solid #ffc107; }
+        .border-reconciliacao { border-left: 5px solid #dc3545; } /* Antiga volta */
         
-        .hidden { display: none !important; }
-        
-        /* Cores das Decisões */
-        .border-jesus { border-left: 5px solid #0d6efd; color: #0d6efd; }
-        .border-nascimento { border-left: 5px solid #198754; color: #198754; }
-        .border-batismo { border-left: 5px solid #ffc107; color: #ffc107; }
-        .border-volta { border-left: 5px solid #dc3545; color: #dc3545; }
-        
-        /* Loading overlay */
-        #loading { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; display:flex; justify-content:center; align-items:center; }
+        .action-btn { cursor: pointer; margin-left: 5px; }
     </style>
 </head>
 <body>
 
-<div id="loading">
-    <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Carregando...</span>
-    </div>
-</div>
-
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-3 col-lg-2 sidebar p-3 d-none d-md-block">
-            <h4 class="text-center mb-4 mt-2"><i class="bi bi-church"></i> Reino Manager</h4>
-            <hr>
+            <h4 class="text-center mb-4"><i class="bi bi-church"></i> Gestão Vidas</h4>
             <ul class="nav flex-column">
-                <li class="nav-item"><a class="nav-link active" onclick="app.navegar('dashboard')"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" onclick="app.navegar('pessoas')"><i class="bi bi-people me-2"></i> Pessoas</a></li>
-                <li class="nav-item"><a class="nav-link" onclick="app.navegar('escalas')"><i class="bi bi-calendar-week me-2"></i> Escalas</a></li>
-                <li class="nav-item"><a class="nav-link" onclick="app.navegar('conselheiros')"><i class="bi bi-person-badge me-2"></i> Conselheiros</a></li>
+                <li class="nav-item"><a class="nav-link active" onclick="showSection('dashboard')"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="showSection('pessoas')"><i class="bi bi-people"></i> Pessoas / Decisões</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="showSection('escalas')"><i class="bi bi-calendar-week"></i> Escalas de Culto</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="showSection('conselheiros')"><i class="bi bi-person-badge"></i> Conselheiros</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="showSection('versiculos')"><i class="bi bi-book"></i> Versículos</a></li>
             </ul>
         </div>
 
@@ -62,59 +53,66 @@
                 </button>
                 <div class="collapse mt-2" id="mobileMenu">
                     <div class="list-group">
-                        <a href="#" class="list-group-item list-group-item-action" onclick="app.navegar('dashboard')">Dashboard</a>
-                        <a href="#" class="list-group-item list-group-item-action" onclick="app.navegar('pessoas')">Pessoas</a>
-                        <a href="#" class="list-group-item list-group-item-action" onclick="app.navegar('escalas')">Escalas</a>
-                        <a href="#" class="list-group-item list-group-item-action" onclick="app.navegar('conselheiros')">Conselheiros</a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="showSection('dashboard')">Dashboard</a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="showSection('pessoas')">Pessoas</a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="showSection('escalas')">Escalas</a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="showSection('conselheiros')">Conselheiros</a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="showSection('versiculos')">Versículos</a>
                     </div>
                 </div>
             </div>
 
             <div id="dashboard" class="section">
-                <h2 class="mb-4">Visão Geral</h2>
+                <h2 class="mb-4">Visão Geral do Reino</h2>
                 <div class="row text-center mb-4">
-                    <div class="col-md-3 col-sm-6">
-                        <div class="card-counter border-jesus">
+                    <div class="col-md-3">
+                        <div class="card-counter border-decisao">
                             <i class="bi bi-heart-fill"></i>
-                            <span class="count-numbers" id="count-jesus">0</span>
-                            <span class="count-name">Aceitaram Jesus</span>
+                            <span class="count-numbers" id="count-decisao">0</span>
+                            <span class="count-name d-block">Decisões</span>
                         </div>
                     </div>
-                    <div class="col-md-3 col-sm-6">
+                    <div class="col-md-3">
                         <div class="card-counter border-nascimento">
                             <i class="bi bi-droplet-fill"></i>
                             <span class="count-numbers" id="count-nascimento">0</span>
-                            <span class="count-name">Novo Nascimento</span>
+                            <span class="count-name d-block">Novo Nascimento</span>
                         </div>
                     </div>
-                    <div class="col-md-3 col-sm-6">
+                    <div class="col-md-3">
                         <div class="card-counter border-batismo">
                             <i class="bi bi-fire"></i>
                             <span class="count-numbers" id="count-batismo">0</span>
-                            <span class="count-name">Batismo Esp. Santo</span>
+                            <span class="count-name d-block">Batismo Esp. Santo</span>
                         </div>
                     </div>
-                    <div class="col-md-3 col-sm-6">
-                        <div class="card-counter border-volta">
+                    <div class="col-md-3">
+                        <div class="card-counter border-reconciliacao">
                             <i class="bi bi-arrow-return-left"></i>
-                            <span class="count-numbers" id="count-volta">0</span>
-                            <span class="count-name">Volta p/ Jesus</span>
+                            <span class="count-numbers" id="count-reconciliacao">0</span>
+                            <span class="count-name d-block">Reconciliação</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="card h-100 p-3 shadow-sm border-0">
-                            <h5 class="card-title">Distribuição de Decisões</h5>
+                    <div class="col-md-6">
+                        <div class="card p-3">
+                            <h5>Distribuição de Decisões</h5>
                             <canvas id="decisoesChart"></canvas>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="card h-100 p-3 shadow-sm border-0">
-                            <h5 class="card-title">Últimos Cadastros</h5>
-                            <ul class="list-group list-group-flush" id="recent-list">
-                                </ul>
+                    <div class="col-md-6">
+                        <div class="card p-3">
+                            <h5>Versículo do Dia (Aleatório)</h5>
+                            <blockquote class="blockquote text-center mt-4" id="dash-versiculo">
+                                <p class="mb-0" id="dash-texto">"Carregando..."</p>
+                                <footer class="blockquote-footer mt-2" id="dash-ref"> Bíblia </footer>
+                            </blockquote>
+                        </div>
+                        <div class="card p-3 mt-3">
+                            <h5>Últimos Cadastros</h5>
+                            <ul class="list-group list-group-flush" id="recent-list"></ul>
                         </div>
                     </div>
                 </div>
@@ -122,25 +120,25 @@
 
             <div id="pessoas" class="section hidden">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2>Cadastro de Vidas</h2>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalPessoa" onclick="app.prepararModalPessoa()">
+                    <h2>Cadastro de Pessoas</h2>
+                    <button class="btn btn-primary" onclick="abrirModalPessoa()">
                         <i class="bi bi-plus-circle"></i> Nova Pessoa
                     </button>
                 </div>
 
-                <div class="card mb-3 border-0 shadow-sm">
+                <div class="card mb-3">
                     <div class="card-body">
-                        <div class="row g-2">
-                            <div class="col-md-6">
-                                <input type="text" id="filtro-nome" class="form-control" placeholder="Buscar por nome..." onkeyup="app.filtrarPessoas()">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <input type="text" id="filtro-nome" class="form-control" placeholder="Buscar por nome..." onkeyup="filtrarPessoas()">
                             </div>
-                            <div class="col-md-6">
-                                <select id="filtro-decisao" class="form-select" onchange="app.filtrarPessoas()">
+                            <div class="col-md-3">
+                                <select id="filtro-decisao" class="form-select" onchange="filtrarPessoas()">
                                     <option value="">Todas as Decisões</option>
-                                    <option value="Aceitou Jesus">Aceitou Jesus</option>
+                                    <option value="Decisão">Decisão</option>
+                                    <option value="Reconciliação">Reconciliação</option>
                                     <option value="Novo Nascimento">Novo Nascimento</option>
                                     <option value="Batismo Espírito Santo">Batismo Espírito Santo</option>
-                                    <option value="Volta para Jesus">Volta para Jesus</option>
                                 </select>
                             </div>
                         </div>
@@ -148,18 +146,18 @@
                 </div>
 
                 <div class="table-responsive bg-white rounded shadow-sm">
-                    <table class="table table-hover mb-0 align-middle">
+                    <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
                                 <th>Nome</th>
-                                <th>Contato / Endereço</th>
+                                <th>Telefone</th>
                                 <th>Decisão</th>
-                                <th>Conselheiro</th>
+                                <th>Conselheiro Resp.</th>
                                 <th>Data</th>
+                                <th class="text-end">Ações</th>
                             </tr>
                         </thead>
-                        <tbody id="tabela-pessoas">
-                            </tbody>
+                        <tbody id="tabela-pessoas"></tbody>
                     </table>
                 </div>
             </div>
@@ -167,24 +165,31 @@
             <div id="escalas" class="section hidden">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h2>Escalas de Culto</h2>
-                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalEscala" onclick="app.prepararModalEscala()">
+                    <button class="btn btn-success" onclick="abrirModalEscala()">
                         <i class="bi bi-calendar-plus"></i> Nova Escala
                     </button>
                 </div>
-
-                <div class="row" id="container-escalas">
-                    </div>
+                <div class="row" id="container-escalas"></div>
             </div>
 
             <div id="conselheiros" class="section hidden">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h2>Conselheiros</h2>
-                    <button class="btn btn-info text-white" data-bs-toggle="modal" data-bs-target="#modalConselheiro">
+                    <button class="btn btn-info text-white" onclick="abrirModalConselheiro()">
                         <i class="bi bi-person-plus"></i> Novo Conselheiro
                     </button>
                 </div>
-                <ul class="list-group shadow-sm" id="lista-conselheiros">
-                    </ul>
+                <ul class="list-group" id="lista-conselheiros"></ul>
+            </div>
+
+            <div id="versiculos" class="section hidden">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2>Banco de Versículos</h2>
+                    <button class="btn btn-warning text-white" onclick="abrirModalVersiculo()">
+                        <i class="bi bi-plus-square"></i> Novo Versículo
+                    </button>
+                </div>
+                <div class="row" id="container-versiculos"></div>
             </div>
 
         </div>
@@ -194,40 +199,41 @@
 <div class="modal fade" id="modalPessoa" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Registrar Decisão</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-header">
+                <h5 class="modal-title" id="tituloModalPessoa">Registrar Decisão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="formPessoa" onsubmit="app.salvarPessoa(event)">
+                <form id="formPessoa">
+                    <input type="hidden" id="p_id">
                     <div class="mb-3">
-                        <label class="form-label">Nome Completo *</label>
+                        <label>Nome Completo</label>
                         <input type="text" class="form-control" id="p_nome" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Telefone</label>
+                        <label>Telefone / WhatsApp</label>
                         <input type="text" class="form-control" id="p_telefone" placeholder="(XX) 9XXXX-XXXX">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Endereço</label>
+                        <label>Endereço</label>
                         <input type="text" class="form-control" id="p_endereco">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Decisão *</label>
+                        <label>Decisão</label>
                         <select class="form-select" id="p_decisao" required>
-                            <option value="Aceitou Jesus">Aceitou Jesus</option>
-                            <option value="Volta para Jesus">Volta para Jesus</option>
+                            <option value="Decisão">Decisão (Aceitou Jesus)</option>
+                            <option value="Reconciliação">Reconciliação</option>
                             <option value="Novo Nascimento">Novo Nascimento</option>
                             <option value="Batismo Espírito Santo">Batismo Espírito Santo</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Conselheiro Responsável</label>
+                        <label>Conselheiro Responsável</label>
                         <select class="form-select" id="p_conselheiro">
                             <option value="">Selecione...</option>
-                            </select>
+                        </select>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Salvar Registro</button>
+                    <button type="submit" class="btn btn-primary w-100">Salvar</button>
                 </form>
             </div>
         </div>
@@ -237,19 +243,23 @@
 <div class="modal fade" id="modalEscala" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title">Agendar Escala</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-header">
+                <h5 class="modal-title" id="tituloModalEscala">Agendar Escala</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="formEscala" onsubmit="app.salvarEscala(event)">
+                <form id="formEscala">
+                    <input type="hidden" id="e_id">
                     <div class="mb-3">
-                        <label class="form-label">Conselheiro *</label>
-                        <select class="form-select" id="e_conselheiro" required>
-                            </select>
+                        <label class="fw-bold">1º Conselheiro</label>
+                        <select class="form-select" id="e_conselheiro1" required></select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Culto *</label>
+                        <label class="fw-bold">2º Conselheiro</label>
+                        <select class="form-select" id="e_conselheiro2" required></select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Culto</label>
                         <select class="form-select" id="e_culto" required>
                             <option value="Domingo Manhã">Domingo Manhã</option>
                             <option value="Domingo Noite">Domingo Noite</option>
@@ -258,10 +268,10 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Data *</label>
+                        <label>Data</label>
                         <input type="date" class="form-control" id="e_data" required>
                     </div>
-                    <button type="submit" class="btn btn-success w-100">Agendar Escala</button>
+                    <button type="submit" class="btn btn-success w-100">Agendar</button>
                 </form>
             </div>
         </div>
@@ -271,21 +281,46 @@
 <div class="modal fade" id="modalConselheiro" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header bg-info text-white">
-                <h5 class="modal-title">Cadastrar Conselheiro</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-header">
+                <h5 class="modal-title" id="tituloModalConselheiro">Cadastrar Conselheiro</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="formConselheiro" onsubmit="app.salvarConselheiro(event)">
+                <form id="formConselheiro">
+                    <input type="hidden" id="c_id">
                     <div class="mb-3">
-                        <label class="form-label">Nome *</label>
+                        <label>Nome</label>
                         <input type="text" class="form-control" id="c_nome" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Telefone</label>
+                        <label>Telefone</label>
                         <input type="text" class="form-control" id="c_telefone">
                     </div>
-                    <button type="submit" class="btn btn-info text-white w-100">Salvar Conselheiro</button>
+                    <button type="submit" class="btn btn-info text-white w-100">Salvar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalVersiculo" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Adicionar Versículo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formVersiculo">
+                    <div class="mb-3">
+                        <label>Texto do Versículo</label>
+                        <textarea class="form-control" id="v_texto" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label>Referência (Ex: João 3:16)</label>
+                        <input type="text" class="form-control" id="v_referencia" required>
+                    </div>
+                    <button type="submit" class="btn btn-warning w-100">Adicionar</button>
                 </form>
             </div>
         </div>
@@ -293,254 +328,418 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
-    // 1. Configuração do Banco de Dados
+    // --- CONFIGURAÇÃO SUPABASE ---
     const SUPABASE_URL = 'https://nekbbkenxcukoortusge.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5la2Jia2VueGN1a29vcnR1c2dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzOTU5MDIsImV4cCI6MjA3ODk3MTkwMn0.D72914Vyz1du1ZDKoNDdwT7YI-D8WPgZe38LbBV2bfc';
+    // *** INSIRA SUA CHAVE ANON AQUI ***
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5la2Jia2VueGN1a29vcnR1c2dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzOTU5MDIsImV4cCI6MjA3ODk3MTkwMn0.D72914Vyz1du1ZDKoNDdwT7YI-D8WPgZe38LbBV2bfc'; 
     
-    // Inicializa o cliente Supabase globalmente
-    const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Inicializa o cliente Supabase corretamente no escopo global
+    window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const sb = window.supabase;
 
-    // Objeto principal da Aplicação (Evita conflitos globais)
-    const app = {
-        allPessoas: [],
-        chartInstance: null,
+    let allPessoas = [];
+    let conselheirosCache = {}; // Cache simples para nomes de conselheiros
 
-        // Inicialização
-        init: function() {
-            this.navegar('dashboard');
-            document.getElementById('loading').style.display = 'none';
-        },
+    // --- NAVEGAÇÃO ---
+    function showSection(sectionId) {
+        document.querySelectorAll('.section').forEach(el => el.classList.add('hidden'));
+        document.getElementById(sectionId).classList.remove('hidden');
+        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+        
+        // Atualiza dados ao entrar na aba
+        if(sectionId === 'dashboard') loadDashboard();
+        if(sectionId === 'pessoas') loadPessoas();
+        if(sectionId === 'escalas') loadEscalas();
+        if(sectionId === 'conselheiros') loadConselheiros();
+        if(sectionId === 'versiculos') loadVersiculos();
+    }
 
-        // Navegação
-        navegar: function(sectionId) {
-            document.querySelectorAll('.section').forEach(el => el.classList.add('hidden'));
-            document.getElementById(sectionId).classList.remove('hidden');
-            
-            // Menu Ativo
-            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-            // Tenta encontrar o link correspondente e ativar (opcional)
+    // --- FUNÇÕES AUXILIARES DE CRUD ---
+    async function deleteItem(table, id, callback) {
+        if(!confirm('Tem certeza que deseja excluir?')) return;
+        const { error } = await sb.from(table).delete().eq('id', id);
+        if(error) alert('Erro ao excluir: ' + error.message);
+        else callback();
+    }
 
-            // Carrega dados
-            if(sectionId === 'dashboard') this.loadDashboard();
-            if(sectionId === 'pessoas') this.loadPessoas();
-            if(sectionId === 'escalas') this.loadEscalas();
-            if(sectionId === 'conselheiros') this.loadConselheiros();
-        },
-
-        // --- DASHBOARD ---
-        loadDashboard: async function() {
-            const { data, error } = await _supabase.from('pessoas').select('decisao, nome, created_at').order('created_at', {ascending: false});
-            if(error) { console.error(error); return; }
-
-            const counts = { 'Aceitou Jesus': 0, 'Novo Nascimento': 0, 'Batismo Espírito Santo': 0, 'Volta para Jesus': 0 };
-            data.forEach(p => { if(counts[p.decisao] !== undefined) counts[p.decisao]++; });
-
-            document.getElementById('count-jesus').innerText = counts['Aceitou Jesus'];
-            document.getElementById('count-nascimento').innerText = counts['Novo Nascimento'];
-            document.getElementById('count-batismo').innerText = counts['Batismo Espírito Santo'];
-            document.getElementById('count-volta').innerText = counts['Volta para Jesus'];
-
-            // Lista Recente
-            const recentList = document.getElementById('recent-list');
-            recentList.innerHTML = '';
-            data.slice(0, 5).forEach(p => {
-                recentList.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                    ${p.nome} <span class="badge bg-secondary rounded-pill">${p.decisao}</span>
-                </li>`;
-            });
-
-            this.renderChart(counts);
-        },
-
-        renderChart: function(counts) {
-            const ctx = document.getElementById('decisoesChart').getContext('2d');
-            if(this.chartInstance) this.chartInstance.destroy();
-            this.chartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(counts),
-                    datasets: [{
-                        data: Object.values(counts),
-                        backgroundColor: ['#0d6efd', '#198754', '#ffc107', '#dc3545']
-                    }]
-                }
-            });
-        },
-
-        // --- PESSOAS ---
-        loadPessoas: async function() {
-            const { data, error } = await _supabase.from('pessoas').select('*, conselheiros(nome)').order('created_at', { ascending: false });
-            if(error) return alert('Erro ao carregar lista.');
-            
-            this.allPessoas = data;
-            this.renderTabelaPessoas(data);
-        },
-
-        renderTabelaPessoas: function(lista) {
-            const tbody = document.getElementById('tabela-pessoas');
-            tbody.innerHTML = '';
-            if(lista.length === 0) tbody.innerHTML = '<tr><td colspan="5" class="text-center p-3">Nenhum registro encontrado.</td></tr>';
-            
-            lista.forEach(p => {
-                const conselheiro = p.conselheiros ? p.conselheiros.nome : '<span class="text-muted fst-italic">Não informado</span>';
-                const row = `<tr>
-                    <td><strong>${p.nome}</strong></td>
-                    <td>
-                        <div><i class="bi bi-telephone"></i> ${p.telefone || '-'}</div>
-                        <div class="small text-muted"><i class="bi bi-geo-alt"></i> ${p.endereco || '-'}</div>
-                    </td>
-                    <td><span class="badge bg-primary">${p.decisao}</span></td>
-                    <td>${conselheiro}</td>
-                    <td>${new Date(p.created_at).toLocaleDateString('pt-BR')}</td>
-                </tr>`;
-                tbody.innerHTML += row;
-            });
-        },
-
-        filtrarPessoas: function() {
-            const termo = document.getElementById('filtro-nome').value.toLowerCase();
-            const decisao = document.getElementById('filtro-decisao').value;
-
-            const filtrados = this.allPessoas.filter(p => {
-                const matchNome = p.nome.toLowerCase().includes(termo);
-                const matchDecisao = decisao === "" || p.decisao === decisao;
-                return matchNome && matchDecisao;
-            });
-            this.renderTabelaPessoas(filtrados);
-        },
-
-        prepararModalPessoa: async function() {
-            const { data } = await _supabase.from('conselheiros').select('id, nome').order('nome');
-            const select = document.getElementById('p_conselheiro');
-            select.innerHTML = '<option value="">Selecione...</option>';
-            data.forEach(c => select.innerHTML += `<option value="${c.id}">${c.nome}</option>`);
-        },
-
-        salvarPessoa: async function(e) {
-            e.preventDefault();
-            const payload = {
-                nome: document.getElementById('p_nome').value,
-                telefone: document.getElementById('p_telefone').value,
-                endereco: document.getElementById('p_endereco').value,
-                decisao: document.getElementById('p_decisao').value,
-                conselheiro_id: document.getElementById('p_conselheiro').value || null
-            };
-
-            const { error } = await _supabase.from('pessoas').insert(payload);
-            if(error) alert('Erro: ' + error.message);
-            else {
-                alert('Salvo com sucesso!');
-                document.getElementById('formPessoa').reset();
-                bootstrap.Modal.getInstance(document.getElementById('modalPessoa')).hide();
-                this.loadPessoas();
-            }
-        },
-
-        // --- ESCALAS ---
-        loadEscalas: async function() {
-            const hoje = new Date().toISOString().split('T')[0];
-            const { data, error } = await _supabase
-                .from('escalas')
-                .select('*, conselheiros(nome)')
-                .gte('data_escala', hoje)
-                .order('data_escala', { ascending: true });
-
-            const container = document.getElementById('container-escalas');
-            container.innerHTML = '';
-
-            if(!data || data.length === 0) {
-                container.innerHTML = '<div class="col-12 text-center text-muted mt-4"><h5>Nenhuma escala futura agendada.</h5></div>';
-                return;
-            }
-
-            data.forEach(e => {
-                // Ajuste visual da data
-                const dateParts = e.data_escala.split('-'); 
-                const dataDisplay = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`; // DD/MM/YYYY
-
-                const card = `
-                <div class="col-md-4 mb-3">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body text-center">
-                            <h6 class="text-primary fw-bold text-uppercase">${e.dia_culto}</h6>
-                            <h2 class="display-6 my-3">${dataDisplay}</h2>
-                            <hr>
-                            <p class="card-text fs-5"><i class="bi bi-person-badge-fill text-secondary"></i> ${e.conselheiros.nome}</p>
-                        </div>
-                    </div>
-                </div>`;
-                container.innerHTML += card;
-            });
-        },
-
-        prepararModalEscala: async function() {
-            const { data } = await _supabase.from('conselheiros').select('id, nome').order('nome');
-            const select = document.getElementById('e_conselheiro');
-            select.innerHTML = '<option value="">Selecione...</option>';
-            data.forEach(c => select.innerHTML += `<option value="${c.id}">${c.nome}</option>`);
-        },
-
-        salvarEscala: async function(e) {
-            e.preventDefault();
-            const payload = {
-                conselheiro_id: document.getElementById('e_conselheiro').value,
-                dia_culto: document.getElementById('e_culto').value,
-                data_escala: document.getElementById('e_data').value
-            };
-            
-            const { error } = await _supabase.from('escalas').insert(payload);
-            if(error) alert('Erro: ' + error.message);
-            else {
-                alert('Escala agendada!');
-                document.getElementById('formEscala').reset();
-                bootstrap.Modal.getInstance(document.getElementById('modalEscala')).hide();
-                this.loadEscalas();
-            }
-        },
-
-        // --- CONSELHEIROS ---
-        loadConselheiros: async function() {
-            const { data, error } = await _supabase.from('conselheiros').select('*').order('nome');
-            const lista = document.getElementById('lista-conselheiros');
-            lista.innerHTML = '';
-            
-            if(!data) return;
-
-            data.forEach(c => {
-                lista.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center p-3">
-                    <div>
-                        <strong class="fs-5">${c.nome}</strong> 
-                        <br> <small class="text-muted"><i class="bi bi-whatsapp"></i> ${c.telefone || 'Não informado'}</small>
-                    </div>
-                    <i class="bi bi-check-circle-fill text-success fs-4"></i>
-                </li>`;
-            });
-        },
-
-        salvarConselheiro: async function(e) {
-            e.preventDefault();
-            const payload = {
-                nome: document.getElementById('c_nome').value,
-                telefone: document.getElementById('c_telefone').value
-            };
-
-            const { error } = await _supabase.from('conselheiros').insert(payload);
-            if(error) alert('Erro: ' + error.message);
-            else {
-                alert('Conselheiro cadastrado!');
-                document.getElementById('formConselheiro').reset();
-                bootstrap.Modal.getInstance(document.getElementById('modalConselheiro')).hide();
-                this.loadConselheiros();
-            }
+    async function cacheConselheiros() {
+        const { data } = await sb.from('conselheiros').select('id, nome');
+        if(data) {
+            conselheirosCache = {};
+            data.forEach(c => conselheirosCache[c.id] = c.nome);
         }
-    };
+    }
 
-    // Iniciar app quando a página carregar
-    document.addEventListener('DOMContentLoaded', () => {
-        app.init();
+    // --- DASHBOARD ---
+    async function loadDashboard() {
+        const { data, error } = await sb.from('pessoas').select('decisao, nome, created_at').order('created_at', {ascending: false});
+        if(error) return console.error(error);
+
+        const counts = {
+            'Decisão': 0, 'Novo Nascimento': 0, 
+            'Batismo Espírito Santo': 0, 'Reconciliação': 0
+        };
+
+        // Normalização de nomes antigos caso existam no banco
+        data.forEach(p => {
+            let d = p.decisao;
+            if (d === 'Aceitou Jesus') d = 'Decisão';
+            if (d === 'Volta para Jesus') d = 'Reconciliação';
+            if (counts[d] !== undefined) counts[d]++;
+        });
+
+        document.getElementById('count-decisao').innerText = counts['Decisão'];
+        document.getElementById('count-nascimento').innerText = counts['Novo Nascimento'];
+        document.getElementById('count-batismo').innerText = counts['Batismo Espírito Santo'];
+        document.getElementById('count-reconciliacao').innerText = counts['Reconciliação'];
+
+        // Lista Recente
+        const recentList = document.getElementById('recent-list');
+        recentList.innerHTML = '';
+        data.slice(0, 5).forEach(p => {
+            let label = p.decisao;
+            if(label === 'Aceitou Jesus') label = 'Decisão';
+            if(label === 'Volta para Jesus') label = 'Reconciliação';
+            
+            recentList.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                ${p.nome} <span class="badge bg-secondary rounded-pill">${label}</span>
+            </li>`;
+        });
+
+        renderChart(counts);
+        loadVersiculoAleatorio();
+    }
+
+    async function loadVersiculoAleatorio() {
+        const { data } = await sb.from('versiculos').select('*');
+        if(data && data.length > 0) {
+            const random = data[Math.floor(Math.random() * data.length)];
+            document.getElementById('dash-texto').innerText = `"${random.texto}"`;
+            document.getElementById('dash-ref').innerText = random.referencia;
+        } else {
+            document.getElementById('dash-texto').innerText = "Nenhum versículo cadastrado ainda.";
+            document.getElementById('dash-ref').innerText = "";
+        }
+    }
+
+    let myChart = null;
+    function renderChart(counts) {
+        const ctx = document.getElementById('decisoesChart').getContext('2d');
+        if(myChart) myChart.destroy();
+        myChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(counts),
+                datasets: [{
+                    data: Object.values(counts),
+                    backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545']
+                }]
+            }
+        });
+    }
+
+    // --- PESSOAS ---
+    async function loadPessoas() {
+        const { data, error } = await sb.from('pessoas').select('*, conselheiros(nome)').order('created_at', { ascending: false });
+        if(error) return;
+        
+        // Ajusta nomes antigos para novos na visualização
+        allPessoas = data.map(p => {
+            if(p.decisao === 'Aceitou Jesus') p.decisao = 'Decisão';
+            if(p.decisao === 'Volta para Jesus') p.decisao = 'Reconciliação';
+            return p;
+        });
+        
+        renderTabelaPessoas(allPessoas);
+    }
+
+    function renderTabelaPessoas(lista) {
+        const tbody = document.getElementById('tabela-pessoas');
+        tbody.innerHTML = '';
+        lista.forEach(p => {
+            const conselheiroNome = p.conselheiros ? p.conselheiros.nome : '-';
+            const row = `<tr>
+                <td><strong>${p.nome}</strong></td>
+                <td>${p.telefone || ''}</td>
+                <td><span class="badge bg-primary">${p.decisao}</span></td>
+                <td>${conselheiroNome}</td>
+                <td>${new Date(p.created_at).toLocaleDateString('pt-BR')}</td>
+                <td class="text-end">
+                    <i class="bi bi-pencil-square text-warning action-btn" onclick="editarPessoa('${p.id}')"></i>
+                    <i class="bi bi-trash text-danger action-btn" onclick="deleteItem('pessoas', '${p.id}', loadPessoas)"></i>
+                </td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
+    }
+
+    function filtrarPessoas() {
+        const termo = document.getElementById('filtro-nome').value.toLowerCase();
+        const decisao = document.getElementById('filtro-decisao').value;
+        const filtrados = allPessoas.filter(p => {
+            const matchNome = p.nome.toLowerCase().includes(termo);
+            const matchDecisao = decisao === "" || p.decisao === decisao;
+            return matchNome && matchDecisao;
+        });
+        renderTabelaPessoas(filtrados);
+    }
+
+    // Modal de Edição/Criação Pessoa
+    async function abrirModalPessoa() {
+        document.getElementById('formPessoa').reset();
+        document.getElementById('p_id').value = '';
+        document.getElementById('tituloModalPessoa').innerText = 'Nova Pessoa';
+        await carregarSelectConselheiros('p_conselheiro');
+        new bootstrap.Modal(document.getElementById('modalPessoa')).show();
+    }
+
+    async function editarPessoa(id) {
+        const pessoa = allPessoas.find(p => p.id === id);
+        if(!pessoa) return;
+        
+        await carregarSelectConselheiros('p_conselheiro');
+        document.getElementById('p_id').value = pessoa.id;
+        document.getElementById('p_nome').value = pessoa.nome;
+        document.getElementById('p_telefone').value = pessoa.telefone;
+        document.getElementById('p_endereco').value = pessoa.endereco;
+        document.getElementById('p_decisao').value = pessoa.decisao;
+        document.getElementById('p_conselheiro').value = pessoa.conselheiro_id;
+        
+        document.getElementById('tituloModalPessoa').innerText = 'Editar Pessoa';
+        new bootstrap.Modal(document.getElementById('modalPessoa')).show();
+    }
+
+    document.getElementById('formPessoa').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('p_id').value;
+        const dados = {
+            nome: document.getElementById('p_nome').value,
+            telefone: document.getElementById('p_telefone').value,
+            endereco: document.getElementById('p_endereco').value,
+            decisao: document.getElementById('p_decisao').value,
+            conselheiro_id: document.getElementById('p_conselheiro').value || null
+        };
+
+        let error;
+        if(id) {
+            ({ error } = await sb.from('pessoas').update(dados).eq('id', id));
+        } else {
+            ({ error } = await sb.from('pessoas').insert(dados));
+        }
+
+        if(error) alert('Erro: ' + error.message);
+        else {
+            bootstrap.Modal.getInstance(document.getElementById('modalPessoa')).hide();
+            loadPessoas();
+        }
     });
+
+    // --- ESCALAS (AGORA COM 2 CONSELHEIROS) ---
+    async function loadEscalas() {
+        await cacheConselheiros(); // Garante que temos os nomes
+        // Não fazemos join complexo para evitar erro se o user nao configurou a FK corretamente
+        // Apenas pegamos os IDs e mapeamos via JS
+        const { data, error } = await sb
+            .from('escalas')
+            .select('*')
+            .gte('data_escala', new Date().toISOString().split('T')[0]) 
+            .order('data_escala', { ascending: true });
+
+        const container = document.getElementById('container-escalas');
+        container.innerHTML = '';
+
+        if(!data || data.length === 0) {
+            container.innerHTML = '<p class="text-muted">Nenhuma escala futura agendada.</p>';
+            return;
+        }
+
+        data.forEach(e => {
+            const dataFmt = new Date(e.data_escala).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+            const nome1 = conselheirosCache[e.conselheiro_id] || 'N/A';
+            const nome2 = conselheirosCache[e.conselheiro_id_2] || 'N/A'; // Campo novo
+
+            const card = `
+            <div class="col-md-4 mb-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <h6 class="text-primary fw-bold">${e.dia_culto}</h6>
+                            <div>
+                                <i class="bi bi-pencil-square text-warning action-btn" onclick="editarEscala('${e.id}')"></i>
+                                <i class="bi bi-trash text-danger action-btn" onclick="deleteItem('escalas', '${e.id}', loadEscalas)"></i>
+                            </div>
+                        </div>
+                        <h3 class="card-title">${dataFmt}</h3>
+                        <p class="card-text fs-6 mb-1"><i class="bi bi-person"></i> ${nome1}</p>
+                        <p class="card-text fs-6"><i class="bi bi-person"></i> ${nome2}</p>
+                    </div>
+                </div>
+            </div>`;
+            container.innerHTML += card;
+        });
+    }
+
+    async function abrirModalEscala() {
+        document.getElementById('formEscala').reset();
+        document.getElementById('e_id').value = '';
+        document.getElementById('tituloModalEscala').innerText = 'Agendar Escala';
+        await carregarSelectConselheiros('e_conselheiro1');
+        await carregarSelectConselheiros('e_conselheiro2');
+        new bootstrap.Modal(document.getElementById('modalEscala')).show();
+    }
+
+    async function editarEscala(id) {
+        const { data } = await sb.from('escalas').select('*').eq('id', id).single();
+        if(!data) return;
+
+        await carregarSelectConselheiros('e_conselheiro1');
+        await carregarSelectConselheiros('e_conselheiro2');
+        
+        document.getElementById('e_id').value = data.id;
+        document.getElementById('e_conselheiro1').value = data.conselheiro_id;
+        document.getElementById('e_conselheiro2').value = data.conselheiro_id_2;
+        document.getElementById('e_culto').value = data.dia_culto;
+        document.getElementById('e_data').value = data.data_escala;
+
+        document.getElementById('tituloModalEscala').innerText = 'Editar Escala';
+        new bootstrap.Modal(document.getElementById('modalEscala')).show();
+    }
+
+    document.getElementById('formEscala').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('e_id').value;
+        const dados = {
+            conselheiro_id: document.getElementById('e_conselheiro1').value,
+            conselheiro_id_2: document.getElementById('e_conselheiro2').value,
+            dia_culto: document.getElementById('e_culto').value,
+            data_escala: document.getElementById('e_data').value
+        };
+
+        let error;
+        if(id) {
+            ({ error } = await sb.from('escalas').update(dados).eq('id', id));
+        } else {
+            ({ error } = await sb.from('escalas').insert(dados));
+        }
+
+        if(error) alert('Erro: ' + error.message);
+        else {
+            bootstrap.Modal.getInstance(document.getElementById('modalEscala')).hide();
+            loadEscalas();
+        }
+    });
+
+    // --- CONSELHEIROS ---
+    async function loadConselheiros() {
+        const { data, error } = await sb.from('conselheiros').select('*').order('nome');
+        if(error) return;
+        const lista = document.getElementById('lista-conselheiros');
+        lista.innerHTML = '';
+        data.forEach(c => {
+            lista.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                <div><strong>${c.nome}</strong> <br> <small class="text-muted">${c.telefone || ''}</small></div>
+                <div>
+                    <i class="bi bi-pencil-square text-warning action-btn" onclick="editarConselheiro('${c.id}', '${c.nome}', '${c.telefone}')"></i>
+                    <i class="bi bi-trash text-danger action-btn" onclick="deleteItem('conselheiros', '${c.id}', loadConselheiros)"></i>
+                </div>
+            </li>`;
+        });
+    }
+
+    function abrirModalConselheiro() {
+        document.getElementById('formConselheiro').reset();
+        document.getElementById('c_id').value = '';
+        document.getElementById('tituloModalConselheiro').innerText = 'Cadastrar Conselheiro';
+        new bootstrap.Modal(document.getElementById('modalConselheiro')).show();
+    }
+
+    function editarConselheiro(id, nome, telefone) {
+        document.getElementById('c_id').value = id;
+        document.getElementById('c_nome').value = nome;
+        document.getElementById('c_telefone').value = telefone === 'null' ? '' : telefone;
+        document.getElementById('tituloModalConselheiro').innerText = 'Editar Conselheiro';
+        new bootstrap.Modal(document.getElementById('modalConselheiro')).show();
+    }
+
+    document.getElementById('formConselheiro').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('c_id').value;
+        const dados = {
+            nome: document.getElementById('c_nome').value,
+            telefone: document.getElementById('c_telefone').value
+        };
+
+        let error;
+        if(id) ({ error } = await sb.from('conselheiros').update(dados).eq('id', id));
+        else ({ error } = await sb.from('conselheiros').insert(dados));
+
+        if(error) alert('Erro: ' + error.message);
+        else {
+            bootstrap.Modal.getInstance(document.getElementById('modalConselheiro')).hide();
+            loadConselheiros();
+        }
+    });
+
+    async function carregarSelectConselheiros(elementId) {
+        const { data } = await sb.from('conselheiros').select('id, nome');
+        const select = document.getElementById(elementId);
+        select.innerHTML = '<option value="">Selecione...</option>';
+        data.forEach(c => {
+            select.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
+        });
+    }
+
+    // --- VERSÍCULOS ---
+    async function loadVersiculos() {
+        const { data, error } = await sb.from('versiculos').select('*').order('created_at', { ascending: false });
+        if(error) return;
+        
+        const container = document.getElementById('container-versiculos');
+        container.innerHTML = '';
+
+        if(data.length === 0) container.innerHTML = '<p class="text-muted p-3">Nenhum versículo cadastrado.</p>';
+
+        data.forEach(v => {
+            const card = `
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <blockquote class="blockquote mb-0">
+                            <p class="fs-6">"${v.texto}"</p>
+                            <footer class="blockquote-footer">${v.referencia}</footer>
+                        </blockquote>
+                    </div>
+                    <div class="card-footer bg-white border-top-0 text-end">
+                         <button class="btn btn-sm btn-outline-danger" onclick="deleteItem('versiculos', '${v.id}', loadVersiculos)">Excluir</button>
+                    </div>
+                </div>
+            </div>`;
+            container.innerHTML += card;
+        });
+    }
+
+    function abrirModalVersiculo() {
+        document.getElementById('formVersiculo').reset();
+        new bootstrap.Modal(document.getElementById('modalVersiculo')).show();
+    }
+
+    document.getElementById('formVersiculo').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const texto = document.getElementById('v_texto').value;
+        const referencia = document.getElementById('v_referencia').value;
+
+        const { error } = await sb.from('versiculos').insert({ texto, referencia });
+        
+        if(error) alert('Erro: ' + error.message);
+        else {
+            bootstrap.Modal.getInstance(document.getElementById('modalVersiculo')).hide();
+            loadVersiculos();
+        }
+    });
+
+    // Iniciar
+    loadDashboard();
 
 </script>
 
