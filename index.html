@@ -1,747 +1,597 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão de Vidas & Escalas</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    
+    <title>Kids Ministry Manager - Escala2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
     <style>
-        body { background-color: #f4f6f9; }
-        .sidebar { min-height: 100vh; background: #2c3e50; color: white; }
-        .nav-link { color: rgba(255,255,255,0.8); cursor: pointer; }
-        .nav-link:hover, .nav-link.active { color: white; background: rgba(255,255,255,0.1); border-radius: 5px; }
-        .card-counter { box-shadow: 2px 2px 10px #DADADA; margin: 5px; padding: 20px 10px; background-color: #fff; height: 100px; border-radius: 5px; transition: .3s linear all; }
-        .card-counter:hover { box-shadow: 4px 4px 20px #DADADA; transform: scale(1.02); }
-        .card-counter i { font-size: 5em; opacity: 0.2; position: absolute; right: 10px; top: 10px; }
-        .bg-primary-light { background-color: #e3f2fd; }
-        .hidden { display: none; }
-        /* Cores específicas para decisões */
-        .border-decisao { border-left: 5px solid #007bff; }
-        .border-nascimento { border-left: 5px solid #28a745; }
-        .border-batismo { border-left: 5px solid #ffc107; }
-        .border-reconciliacao { border-left: 5px solid #dc3545; } /* Antiga volta */
-        
-        .action-btn { cursor: pointer; margin-left: 5px; }
+        .active-tab { background-color: #3b82f6; color: white; }
+        .hidden-section { display: none; }
+        body { background-color: #f3f4f6; }
     </style>
 </head>
-<body>
+<body class="h-screen flex flex-col md:flex-row overflow-hidden">
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-3 col-lg-2 sidebar p-3 d-none d-md-block">
-            <h4 class="text-center mb-4"><i class="bi bi-church"></i> Gestão Vidas</h4>
-            <ul class="nav flex-column">
-                <li class="nav-item"><a class="nav-link active" onclick="showSection('dashboard')"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" onclick="showSection('pessoas')"><i class="bi bi-people"></i> Pessoas / Decisões</a></li>
-                <li class="nav-item"><a class="nav-link" onclick="showSection('escalas')"><i class="bi bi-calendar-week"></i> Escalas de Culto</a></li>
-                <li class="nav-item"><a class="nav-link" onclick="showSection('conselheiros')"><i class="bi bi-person-badge"></i> Conselheiros</a></li>
-                <li class="nav-item"><a class="nav-link" onclick="showSection('versiculos')"><i class="bi bi-book"></i> Versículos</a></li>
-            </ul>
+    <aside class="w-full md:w-64 bg-white shadow-lg flex-shrink-0 flex flex-col z-20">
+        <div class="p-6 bg-blue-600 text-white flex items-center justify-between">
+            <h1 class="text-xl font-bold"><i class="fas fa-child"></i> Depto. Infantil</h1>
         </div>
+        <nav class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-2 px-4">
+                <li><button onclick="showSection('dashboard')" id="btn-dashboard" class="w-full text-left py-2 px-4 rounded hover:bg-blue-100 transition active-tab"><i class="fas fa-chart-pie mr-2"></i> Dashboard</button></li>
+                <li><button onclick="showSection('checkin')" id="btn-checkin" class="w-full text-left py-2 px-4 rounded hover:bg-blue-100 transition"><i class="fas fa-qrcode mr-2"></i> Check-in / Saída</button></li>
+                <li><button onclick="showSection('professores')" id="btn-professores" class="w-full text-left py-2 px-4 rounded hover:bg-blue-100 transition"><i class="fas fa-users mr-2"></i> Professores</button></li>
+                <li><button onclick="showSection('escala')" id="btn-escala" class="w-full text-left py-2 px-4 rounded hover:bg-blue-100 transition"><i class="fas fa-calendar-alt mr-2"></i> Escala (v2)</button></li>
+            </ul>
+        </nav>
+        <div class="p-4 border-t text-xs text-gray-500 text-center">
+            Sistema V 2.1 (Simples)
+        </div>
+    </aside>
 
-        <div class="col-md-9 col-lg-10 p-4">
+    <main class="flex-1 overflow-y-auto p-6 relative">
+        
+        <section id="dashboard" class="block">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Visão Geral</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white p-4 rounded shadow border-l-4 border-blue-500">
+                    <p class="text-gray-500 text-sm">Crianças Presentes Agora</p>
+                    <p class="text-3xl font-bold" id="dash-total-kids">0</p>
+                </div>
+                <div class="bg-white p-4 rounded shadow border-l-4 border-green-500">
+                    <p class="text-gray-500 text-sm">Professores na Escala (Hoje)</p>
+                    <p class="text-3xl font-bold" id="dash-total-teachers">0</p>
+                </div>
+                <div class="bg-white p-4 rounded shadow border-l-4 border-purple-500">
+                    <p class="text-gray-500 text-sm">Sala Mais Cheia</p>
+                    <p class="text-xl font-bold truncate" id="dash-busy-room">-</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded shadow">
+                    <h3 class="font-bold mb-4">Crianças por Sala (Hoje)</h3>
+                    <canvas id="kidsChart"></canvas>
+                </div>
+                <div class="bg-white p-6 rounded shadow">
+                    <h3 class="font-bold mb-4">Últimas Movimentações</h3>
+                    <ul id="recent-activity" class="text-sm space-y-2">
+                        <li class="text-gray-500">Carregando...</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="checkin" class="hidden-section">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Registro de Presença (QR Code)</h2>
             
-            <div class="d-md-none mb-3">
-                <button class="btn btn-dark w-100" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu">
-                    <i class="bi bi-list"></i> Menu
-                </button>
-                <div class="collapse mt-2" id="mobileMenu">
-                    <div class="list-group">
-                        <a href="#" class="list-group-item list-group-item-action" onclick="showSection('dashboard')">Dashboard</a>
-                        <a href="#" class="list-group-item list-group-item-action" onclick="showSection('pessoas')">Pessoas</a>
-                        <a href="#" class="list-group-item list-group-item-action" onclick="showSection('escalas')">Escalas</a>
-                        <a href="#" class="list-group-item list-group-item-action" onclick="showSection('conselheiros')">Conselheiros</a>
-                        <a href="#" class="list-group-item list-group-item-action" onclick="showSection('versiculos')">Versículos</a>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded shadow">
+                    <h3 class="font-bold mb-2">Escanear QR Code</h3>
+                    <div id="reader" class="w-full bg-black h-64 rounded mb-4"></div>
+                    <p class="text-sm text-gray-500 mb-2">Aponte para o QR fixo da criança.</p>
+                    <div id="scan-result" class="hidden p-3 bg-yellow-100 text-yellow-800 rounded mb-2 font-mono text-center"></div>
+                    
+                    <div id="entry-form" class="hidden mt-4 border-t pt-4">
+                        <h4 class="font-bold text-blue-600 mb-2">Novo Check-in</h4>
+                        <input type="text" id="entry-qr" class="hidden"> <div class="grid grid-cols-2 gap-2 mb-2">
+                            <input type="text" id="entry-name" placeholder="Nome da Criança" class="border p-2 rounded w-full">
+                            <input type="number" id="entry-age" placeholder="Idade" class="border p-2 rounded w-full" onchange="autoSelectRoom()">
+                        </div>
+                        <input type="text" id="entry-parent" placeholder="Nome do Responsável" class="border p-2 rounded w-full mb-2">
+                        <select id="entry-room" class="border p-2 rounded w-full mb-3 bg-gray-100">
+                            <option value="">Selecione a Sala (Auto)</option>
+                            <option value="0-2">Sala 0 a 2 anos</option>
+                            <option value="3-5">Sala 3 a 5 anos</option>
+                            <option value="6-8">Sala 6 a 8 anos</option>
+                            <option value="9-12">Sala 9 a 12 anos</option>
+                        </select>
+                        <button onclick="confirmCheckIn()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded">Confirmar Entrada</button>
                     </div>
-                </div>
-            </div>
 
-            <div id="dashboard" class="section">
-                <h2 class="mb-4">Visão Geral do Reino</h2>
-                <div class="row text-center mb-4">
-                    <div class="col-md-3">
-                        <div class="card-counter border-decisao">
-                            <i class="bi bi-heart-fill"></i>
-                            <span class="count-numbers" id="count-decisao">0</span>
-                            <span class="count-name d-block">Decisões</span>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card-counter border-nascimento">
-                            <i class="bi bi-droplet-fill"></i>
-                            <span class="count-numbers" id="count-nascimento">0</span>
-                            <span class="count-name d-block">Novo Nascimento</span>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card-counter border-batismo">
-                            <i class="bi bi-fire"></i>
-                            <span class="count-numbers" id="count-batismo">0</span>
-                            <span class="count-name d-block">Batismo Esp. Santo</span>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card-counter border-reconciliacao">
-                            <i class="bi bi-arrow-return-left"></i>
-                            <span class="count-numbers" id="count-reconciliacao">0</span>
-                            <span class="count-name d-block">Reconciliação</span>
-                        </div>
+                    <div id="exit-msg" class="hidden mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                        <strong class="font-bold">Saída Registrada!</strong>
+                        <span class="block sm:inline" id="exit-details"></span>
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card p-3">
-                            <h5>Distribuição de Decisões</h5>
-                            <canvas id="decisoesChart"></canvas>
-                        </div>
+                <div class="bg-white p-6 rounded shadow h-full overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold">Crianças em Sala (Agora)</h3>
+                        <button onclick="loadActiveKids()" class="text-blue-500 text-sm"><i class="fas fa-sync"></i></button>
                     </div>
-                    <div class="col-md-6">
-                        <div class="card p-3">
-                            <h5>Versículo do Dia (Aleatório)</h5>
-                            <blockquote class="blockquote text-center mt-4" id="dash-versiculo">
-                                <p class="mb-0" id="dash-texto">"Carregando..."</p>
-                                <footer class="blockquote-footer mt-2" id="dash-ref"> Bíblia </footer>
-                            </blockquote>
-                        </div>
-                        <div class="card p-3 mt-3">
-                            <h5>Últimos Cadastros</h5>
-                            <ul class="list-group list-group-flush" id="recent-list"></ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="pessoas" class="section hidden">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2>Cadastro de Pessoas</h2>
-                    <button class="btn btn-primary" onclick="abrirModalPessoa()">
-                        <i class="bi bi-plus-circle"></i> Nova Pessoa
-                    </button>
-                </div>
-
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <input type="text" id="filtro-nome" class="form-control" placeholder="Buscar por nome..." onkeyup="filtrarPessoas()">
-                            </div>
-                            <div class="col-md-3">
-                                <select id="filtro-decisao" class="form-select" onchange="filtrarPessoas()">
-                                    <option value="">Todas as Decisões</option>
-                                    <option value="Reconciliação">Reconciliação</option>
-                                    <option value="Novo Nascimento">Novo Nascimento</option>
-                                    <option value="Batismo Espírito Santo">Batismo Espírito Santo</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="table-responsive bg-white rounded shadow-sm">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Nome</th>
-                                <th>Telefone</th>
-                                <th>Decisão</th>
-                                <th>Conselheiro Resp.</th>
-                                <th>Data</th>
-                                <th class="text-end">Ações</th>
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="p-2">Nome</th>
+                                <th class="p-2">Sala</th>
+                                <th class="p-2">Entrada</th>
                             </tr>
                         </thead>
-                        <tbody id="tabela-pessoas"></tbody>
+                        <tbody id="active-kids-list">
+                            </tbody>
                     </table>
                 </div>
             </div>
+        </section>
 
-            <div id="escalas" class="section hidden">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2>Escalas de Culto</h2>
-                    <button class="btn btn-success" onclick="abrirModalEscala()">
-                        <i class="bi bi-calendar-plus"></i> Nova Escala
-                    </button>
-                </div>
-                <div class="row" id="container-escalas"></div>
-            </div>
-
-            <div id="conselheiros" class="section hidden">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2>Conselheiros</h2>
-                    <button class="btn btn-info text-white" onclick="abrirModalConselheiro()">
-                        <i class="bi bi-person-plus"></i> Novo Conselheiro
-                    </button>
-                </div>
-                <ul class="list-group" id="lista-conselheiros"></ul>
-            </div>
-
-            <div id="versiculos" class="section hidden">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2>Banco de Versículos</h2>
-                    <button class="btn btn-warning text-white" onclick="abrirModalVersiculo()">
-                        <i class="bi bi-plus-square"></i> Novo Versículo
-                    </button>
-                </div>
-                <div class="row" id="container-versiculos"></div>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="modalPessoa" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="tituloModalPessoa">Registrar Decisão</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="formPessoa">
-                    <input type="hidden" id="p_id">
-                    <div class="mb-3">
-                        <label>Nome Completo</label>
-                        <input type="text" class="form-control" id="p_nome" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Telefone / WhatsApp</label>
-                        <input type="text" class="form-control" id="p_telefone" placeholder="(XX) 9XXXX-XXXX">
-                    </div>
-                    <div class="mb-3">
-                        <label>Endereço</label>
-                        <input type="text" class="form-control" id="p_endereco">
-                    </div>
-                    <div class="mb-3">
-                        <label>Decisão</label>
-                        <select class="form-select" id="p_decisao" required>
-                            <option value="Reconciliação">Reconciliação</option>
-                            <option value="Novo Nascimento">Novo Nascimento</option>
-                            <option value="Batismo Espírito Santo">Batismo Espírito Santo</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label>Conselheiro Responsável</label>
-                        <select class="form-select" id="p_conselheiro">
-                            <option value="">Selecione...</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Salvar</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="modalEscala" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="tituloModalEscala">Agendar Escala</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="formEscala">
-                    <input type="hidden" id="e_id">
-                    <div class="mb-3">
-                        <label class="fw-bold">1º Conselheiro</label>
-                        <select class="form-select" id="e_conselheiro1" required></select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="fw-bold">2º Conselheiro</label>
-                        <select class="form-select" id="e_conselheiro2" required></select>
-                    </div>
-                    <div class="mb-3">
-                        <label>Culto</label>
-                        <select class="form-select" id="e_culto" required>
-                            <option value="Domingo Manhã">Domingo Manhã</option>
-                            <option value="Domingo Noite">Domingo Noite</option>
-                            <option value="Terça">Terça</option>
-                            <option value="Quinta">Quinta</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label>Data</label>
-                        <input type="date" class="form-control" id="e_data" required>
-                    </div>
-                    <button type="submit" class="btn btn-success w-100">Agendar</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="modalConselheiro" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="tituloModalConselheiro">Cadastrar Conselheiro</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="formConselheiro">
-                    <input type="hidden" id="c_id">
-                    <div class="mb-3">
-                        <label>Nome</label>
-                        <input type="text" class="form-control" id="c_nome" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Telefone</label>
-                        <input type="text" class="form-control" id="c_telefone">
-                    </div>
-                    <button type="submit" class="btn btn-info text-white w-100">Salvar</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="modalVersiculo" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Adicionar Versículo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="formVersiculo">
-                    <div class="mb-3">
-                        <label>Texto do Versículo</label>
-                        <textarea class="form-control" id="v_texto" rows="3" required></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label>Referência (Ex: João 3:16)</label>
-                        <input type="text" class="form-control" id="v_referencia" required>
-                    </div>
-                    <button type="submit" class="btn btn-warning w-100">Adicionar</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    // --- CONFIGURAÇÃO SUPABASE ---
-    const SUPABASE_URL = 'https://nekbbkenxcukoortusge.supabase.co';
-    // *** INSIRA SUA CHAVE ANON AQUI ***
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5la2Jia2VueGN1a29vcnR1c2dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzOTU5MDIsImV4cCI6MjA3ODk3MTkwMn0.D72914Vyz1du1ZDKoNDdwT7YI-D8WPgZe38LbBV2bfc'; 
-    
-    // Inicializa o cliente Supabase corretamente no escopo global
-    window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const sb = window.supabase;
-
-    let allPessoas = [];
-    let conselheirosCache = {}; // Cache simples para nomes de conselheiros
-
-    // --- NAVEGAÇÃO ---
-    function showSection(sectionId) {
-        document.querySelectorAll('.section').forEach(el => el.classList.add('hidden'));
-        document.getElementById(sectionId).classList.remove('hidden');
-        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-        
-        // Atualiza dados ao entrar na aba
-        if(sectionId === 'dashboard') loadDashboard();
-        if(sectionId === 'pessoas') loadPessoas();
-        if(sectionId === 'escalas') loadEscalas();
-        if(sectionId === 'conselheiros') loadConselheiros();
-        if(sectionId === 'versiculos') loadVersiculos();
-    }
-
-    // --- FUNÇÕES AUXILIARES DE CRUD ---
-    async function deleteItem(table, id, callback) {
-        if(!confirm('Tem certeza que deseja excluir?')) return;
-        const { error } = await sb.from(table).delete().eq('id', id);
-        if(error) alert('Erro ao excluir: ' + error.message);
-        else callback();
-    }
-
-    async function cacheConselheiros() {
-        const { data } = await sb.from('conselheiros').select('id, nome');
-        if(data) {
-            conselheirosCache = {};
-            data.forEach(c => conselheirosCache[c.id] = c.nome);
-        }
-    }
-
-    // --- DASHBOARD ---
-    async function loadDashboard() {
-        const { data, error } = await sb.from('pessoas').select('decisao, nome, created_at').order('created_at', {ascending: false});
-        if(error) return console.error(error);
-
-        const counts = {
-            'Decisão': 0, 'Novo Nascimento': 0, 
-            'Batismo Espírito Santo': 0, 'Reconciliação': 0
-        };
-
-        // Normalização de nomes antigos caso existam no banco
-        data.forEach(p => {
-            let d = p.decisao;
-            if (d === 'Aceitou Jesus') d = 'Decisão';
-            if (d === 'Volta para Jesus') d = 'Reconciliação';
-            if (counts[d] !== undefined) counts[d]++;
-        });
-
-        document.getElementById('count-decisao').innerText = counts['Decisão'];
-        document.getElementById('count-nascimento').innerText = counts['Novo Nascimento'];
-        document.getElementById('count-batismo').innerText = counts['Batismo Espírito Santo'];
-        document.getElementById('count-reconciliacao').innerText = counts['Reconciliação'];
-
-        // Lista Recente
-        const recentList = document.getElementById('recent-list');
-        recentList.innerHTML = '';
-        data.slice(0, 5).forEach(p => {
-            let label = p.decisao;
-            if(label === 'Aceitou Jesus') label = 'Decisão';
-            if(label === 'Volta para Jesus') label = 'Reconciliação';
+        <section id="professores" class="hidden-section">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Gerenciamento de Professores</h2>
             
-            recentList.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                ${p.nome} <span class="badge bg-secondary rounded-pill">${label}</span>
-            </li>`;
-        });
+            <div class="bg-white p-4 rounded shadow mb-6">
+                <h3 class="font-bold mb-2">Cadastrar Novo</h3>
+                <div class="flex flex-wrap gap-2">
+                    <input type="text" id="prof-name" placeholder="Nome Completo" class="border p-2 rounded flex-1">
+                    <select id="prof-sala" class="border p-2 rounded w-40">
+                        <option value="0-2">0 a 2 anos</option>
+                        <option value="3-5">3 a 5 anos</option>
+                        <option value="6-8">6 a 8 anos</option>
+                        <option value="9-12">9 a 12 anos</option>
+                    </select>
+                    <input type="text" id="prof-tel" placeholder="Telefone" class="border p-2 rounded w-40">
+                    <button onclick="addTeacher()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Salvar</button>
+                </div>
+            </div>
 
-        renderChart(counts);
-        loadVersiculoAleatorio();
-    }
+            <div class="bg-white rounded shadow overflow-x-auto">
+                <table class="min-w-full leading-normal">
+                    <thead>
+                        <tr>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nome</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Sala Pref.</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teachers-list">
+                        </tbody>
+                </table>
+            </div>
+        </section>
 
-    async function loadVersiculoAleatorio() {
-        const { data } = await sb.from('versiculos').select('*');
-        if(data && data.length > 0) {
-            const random = data[Math.floor(Math.random() * data.length)];
-            document.getElementById('dash-texto').innerText = `"${random.texto}"`;
-            document.getElementById('dash-ref').innerText = random.referencia;
-        } else {
-            document.getElementById('dash-texto').innerText = "Nenhum versículo cadastrado ainda.";
-            document.getElementById('dash-ref').innerText = "";
-        }
-    }
-
-    let myChart = null;
-    function renderChart(counts) {
-        const ctx = document.getElementById('decisoesChart').getContext('2d');
-        if(myChart) myChart.destroy();
-        myChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(counts),
-                datasets: [{
-                    data: Object.values(counts),
-                    backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545']
-                }]
-            }
-        });
-    }
-
-    // --- PESSOAS ---
-    async function loadPessoas() {
-        const { data, error } = await sb.from('pessoas').select('*, conselheiros(nome)').order('created_at', { ascending: false });
-        if(error) return;
-        
-        // Ajusta nomes antigos para novos na visualização
-        allPessoas = data.map(p => {
-            if(p.decisao === 'Aceitou Jesus') p.decisao = 'Decisão';
-            if(p.decisao === 'Volta para Jesus') p.decisao = 'Reconciliação';
-            return p;
-        });
-        
-        renderTabelaPessoas(allPessoas);
-    }
-
-    function renderTabelaPessoas(lista) {
-        const tbody = document.getElementById('tabela-pessoas');
-        tbody.innerHTML = '';
-        lista.forEach(p => {
-            const conselheiroNome = p.conselheiros ? p.conselheiros.nome : '-';
-            const row = `<tr>
-                <td><strong>${p.nome}</strong></td>
-                <td>${p.telefone || ''}</td>
-                <td><span class="badge bg-primary">${p.decisao}</span></td>
-                <td>${conselheiroNome}</td>
-                <td>${new Date(p.created_at).toLocaleDateString('pt-BR')}</td>
-                <td class="text-end">
-                    <i class="bi bi-pencil-square text-warning action-btn" onclick="editarPessoa('${p.id}')"></i>
-                    <i class="bi bi-trash text-danger action-btn" onclick="deleteItem('pessoas', '${p.id}', loadPessoas)"></i>
-                </td>
-            </tr>`;
-            tbody.innerHTML += row;
-        });
-    }
-
-    function filtrarPessoas() {
-        const termo = document.getElementById('filtro-nome').value.toLowerCase();
-        const decisao = document.getElementById('filtro-decisao').value;
-        const filtrados = allPessoas.filter(p => {
-            const matchNome = p.nome.toLowerCase().includes(termo);
-            const matchDecisao = decisao === "" || p.decisao === decisao;
-            return matchNome && matchDecisao;
-        });
-        renderTabelaPessoas(filtrados);
-    }
-
-    // Modal de Edição/Criação Pessoa
-    async function abrirModalPessoa() {
-        document.getElementById('formPessoa').reset();
-        document.getElementById('p_id').value = '';
-        document.getElementById('tituloModalPessoa').innerText = 'Nova Pessoa';
-        await carregarSelectConselheiros('p_conselheiro');
-        new bootstrap.Modal(document.getElementById('modalPessoa')).show();
-    }
-
-    async function editarPessoa(id) {
-        const pessoa = allPessoas.find(p => p.id === id);
-        if(!pessoa) return;
-        
-        await carregarSelectConselheiros('p_conselheiro');
-        document.getElementById('p_id').value = pessoa.id;
-        document.getElementById('p_nome').value = pessoa.nome;
-        document.getElementById('p_telefone').value = pessoa.telefone;
-        document.getElementById('p_endereco').value = pessoa.endereco;
-        document.getElementById('p_decisao').value = pessoa.decisao;
-        document.getElementById('p_conselheiro').value = pessoa.conselheiro_id;
-        
-        document.getElementById('tituloModalPessoa').innerText = 'Editar Pessoa';
-        new bootstrap.Modal(document.getElementById('modalPessoa')).show();
-    }
-
-    document.getElementById('formPessoa').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const id = document.getElementById('p_id').value;
-        const dados = {
-            nome: document.getElementById('p_nome').value,
-            telefone: document.getElementById('p_telefone').value,
-            endereco: document.getElementById('p_endereco').value,
-            decisao: document.getElementById('p_decisao').value,
-            conselheiro_id: document.getElementById('p_conselheiro').value || null
-        };
-
-        let error;
-        if(id) {
-            ({ error } = await sb.from('pessoas').update(dados).eq('id', id));
-        } else {
-            ({ error } = await sb.from('pessoas').insert(dados));
-        }
-
-        if(error) alert('Erro: ' + error.message);
-        else {
-            bootstrap.Modal.getInstance(document.getElementById('modalPessoa')).hide();
-            loadPessoas();
-        }
-    });
-
-    // --- ESCALAS (AGORA COM 2 CONSELHEIROS) ---
-    async function loadEscalas() {
-        await cacheConselheiros(); // Garante que temos os nomes
-        // Não fazemos join complexo para evitar erro se o user nao configurou a FK corretamente
-        // Apenas pegamos os IDs e mapeamos via JS
-        const { data, error } = await sb
-            .from('escalas')
-            .select('*')
-            .gte('data_escala', new Date().toISOString().split('T')[0]) 
-            .order('data_escala', { ascending: true });
-
-        const container = document.getElementById('container-escalas');
-        container.innerHTML = '';
-
-        if(!data || data.length === 0) {
-            container.innerHTML = '<p class="text-muted">Nenhuma escala futura agendada.</p>';
-            return;
-        }
-
-        data.forEach(e => {
-            const dataFmt = new Date(e.data_escala).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
-            const nome1 = conselheirosCache[e.conselheiro_id] || 'N/A';
-            const nome2 = conselheirosCache[e.conselheiro_id_2] || 'N/A'; // Campo novo
-
-            const card = `
-            <div class="col-md-4 mb-3">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <h6 class="text-primary fw-bold">${e.dia_culto}</h6>
-                            <div>
-                                <i class="bi bi-pencil-square text-warning action-btn" onclick="editarEscala('${e.id}')"></i>
-                                <i class="bi bi-trash text-danger action-btn" onclick="deleteItem('escalas', '${e.id}', loadEscalas)"></i>
-                            </div>
-                        </div>
-                        <h3 class="card-title">${dataFmt}</h3>
-                        <p class="card-text fs-6 mb-1"><i class="bi bi-person"></i> ${nome1}</p>
-                        <p class="card-text fs-6"><i class="bi bi-person"></i> ${nome2}</p>
+        <section id="escala" class="hidden-section">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Escala do Culto (Escala2)</h2>
+            
+            <div class="bg-white p-6 rounded shadow mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Data do Culto</label>
+                        <input type="date" id="escala-date" class="border p-2 rounded w-full">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Sala</label>
+                        <select id="escala-sala" class="border p-2 rounded w-full" onchange="filterTeachersForEscala()">
+                            <option value="0-2">0 a 2 anos</option>
+                            <option value="3-5">3 a 5 anos</option>
+                            <option value="6-8">6 a 8 anos</option>
+                            <option value="9-12">9 a 12 anos</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Professores Disponíveis</label>
+                        <select id="escala-prof-select" class="border p-2 rounded w-full h-10" multiple>
+                            </select>
+                        <p class="text-xs text-gray-500 mt-1">* Segure Ctrl/Cmd para selecionar vários</p>
                     </div>
                 </div>
-            </div>`;
-            container.innerHTML += card;
-        });
-    }
+                <button onclick="saveEscala()" class="w-full bg-purple-600 text-white font-bold py-2 rounded hover:bg-purple-700">Salvar na Escala2</button>
+            </div>
 
-    async function abrirModalEscala() {
-        document.getElementById('formEscala').reset();
-        document.getElementById('e_id').value = '';
-        document.getElementById('tituloModalEscala').innerText = 'Agendar Escala';
-        await carregarSelectConselheiros('e_conselheiro1');
-        await carregarSelectConselheiros('e_conselheiro2');
-        new bootstrap.Modal(document.getElementById('modalEscala')).show();
-    }
+            <div class="bg-white p-4 rounded shadow">
+                <h3 class="font-bold mb-4">Escala Atual (Próximos Cultos)</h3>
+                <div id="escala-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    </div>
+            </div>
+        </section>
 
-    async function editarEscala(id) {
-        const { data } = await sb.from('escalas').select('*').eq('id', id).single();
-        if(!data) return;
+    </main>
 
-        await carregarSelectConselheiros('e_conselheiro1');
-        await carregarSelectConselheiros('e_conselheiro2');
-        
-        document.getElementById('e_id').value = data.id;
-        document.getElementById('e_conselheiro1').value = data.conselheiro_id;
-        document.getElementById('e_conselheiro2').value = data.conselheiro_id_2;
-        document.getElementById('e_culto').value = data.dia_culto;
-        document.getElementById('e_data').value = data.data_escala;
+    <div id="editModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Editar Professor</h3>
+                <div class="mt-2 px-7 py-3">
+                    <input type="hidden" id="edit-id">
+                    <input type="text" id="edit-name" class="mb-3 border p-2 w-full rounded" placeholder="Nome">
+                    <select id="edit-sala" class="mb-3 border p-2 w-full rounded">
+                        <option value="0-2">0-2</option><option value="3-5">3-5</option><option value="6-8">6-8</option><option value="9-12">9-12</option>
+                    </select>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button onclick="updateTeacher()" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                        Salvar
+                    </button>
+                    <button onclick="document.getElementById('editModal').classList.add('hidden')" class="px-4 py-2 bg-gray-300 text-black text-base font-medium rounded shadow-sm hover:bg-gray-400">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        document.getElementById('tituloModalEscala').innerText = 'Editar Escala';
-        new bootstrap.Modal(document.getElementById('modalEscala')).show();
-    }
+    <script>
+        // --- CONFIGURAÇÃO SUPABASE ---
+        const SUPABASE_URL = 'https://nekbbkenxcukoortusge.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5la2Jia2VueGN1a29vcnR1c2dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzOTU5MDIsImV4cCI6MjA3ODk3MTkwMn0.D72914Vyz1du1ZDKoNDdwT7YI-D8WPgZe38LbBV2bfc'; 
 
-    document.getElementById('formEscala').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const id = document.getElementById('e_id').value;
-        const dados = {
-            conselheiro_id: document.getElementById('e_conselheiro1').value,
-            conselheiro_id_2: document.getElementById('e_conselheiro2').value,
-            dia_culto: document.getElementById('e_culto').value,
-            data_escala: document.getElementById('e_data').value
-        };
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let error;
-        if(id) {
-            ({ error } = await sb.from('escalas').update(dados).eq('id', id));
-        } else {
-            ({ error } = await sb.from('escalas').insert(dados));
+        // --- NAVEGAÇÃO ---
+        function showSection(id) {
+            document.querySelectorAll('section').forEach(el => el.classList.add('hidden-section'));
+            document.getElementById(id).classList.remove('hidden-section');
+            
+            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active-tab'));
+            document.getElementById('btn-' + id).classList.add('active-tab');
+
+            if(id === 'professores') loadTeachers();
+            if(id === 'escala') loadTeachersForEscala();
+            if(id === 'dashboard') loadDashboard();
+            if(id === 'checkin') startScanner();
+            else stopScanner();
         }
 
-        if(error) alert('Erro: ' + error.message);
-        else {
-            bootstrap.Modal.getInstance(document.getElementById('modalEscala')).hide();
+        // --- PROFESSORES (CRUD) ---
+        async function loadTeachers() {
+            const { data, error } = await supabase.from('professores').select('*').order('nome');
+            const list = document.getElementById('teachers-list');
+            list.innerHTML = '';
+            
+            if(data) {
+                data.forEach(p => {
+                    const row = `
+                        <tr>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm"><p class="text-gray-900 whitespace-no-wrap">${p.nome}</p></td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm"><span class="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight"><span aria-hidden class="absolute inset-0 bg-green-200 opacity-50 rounded-full"></span><span class="relative">${p.sala_preferencia}</span></span></td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                <button onclick="openEditTeacher('${p.id}', '${p.nome}', '${p.sala_preferencia}')" class="text-blue-600 hover:text-blue-900 mr-2"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteTeacher('${p.id}')" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>`;
+                    list.innerHTML += row;
+                });
+            }
+        }
+
+        async function addTeacher() {
+            const nome = document.getElementById('prof-name').value;
+            const sala = document.getElementById('prof-sala').value;
+            const tel = document.getElementById('prof-tel').value;
+
+            if(!nome) return alert("Preencha o nome");
+
+            // SIMPLIFICAÇÃO: Enviando apenas os campos de dados. O ID é gerado pelo banco.
+            const novoProfessor = {
+                nome: nome,
+                sala_preferencia: sala,
+                telefone: tel
+            };
+
+            const { error } = await supabase.from('professores').insert([novoProfessor]);
+            
+            if(error) {
+                console.error(error);
+                alert('Erro ao salvar. Verifique se o banco está configurado para gerar IDs automaticamente.');
+            } else {
+                document.getElementById('prof-name').value = '';
+                loadTeachers();
+            }
+        }
+
+        async function deleteTeacher(id) {
+            if(confirm('Tem certeza?')) {
+                await supabase.from('professores').delete().eq('id', id);
+                loadTeachers();
+            }
+        }
+
+        function openEditTeacher(id, nome, sala) {
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-name').value = nome;
+            document.getElementById('edit-sala').value = sala;
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        async function updateTeacher() {
+            const id = document.getElementById('edit-id').value;
+            const nome = document.getElementById('edit-name').value;
+            const sala = document.getElementById('edit-sala').value;
+
+            await supabase.from('professores').update({ nome, sala_preferencia: sala }).eq('id', id);
+            document.getElementById('editModal').classList.add('hidden');
+            loadTeachers();
+        }
+
+        // --- ESCALA (USANDO TABELA Escala2) ---
+        async function loadTeachersForEscala() {
+            const { data } = await supabase.from('professores').select('*');
+            window.allTeachers = data || []; 
+            filterTeachersForEscala();
             loadEscalas();
         }
-    });
 
-    // --- CONSELHEIROS ---
-    async function loadConselheiros() {
-        const { data, error } = await sb.from('conselheiros').select('*').order('nome');
-        if(error) return;
-        const lista = document.getElementById('lista-conselheiros');
-        lista.innerHTML = '';
-        data.forEach(c => {
-            lista.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                <div><strong>${c.nome}</strong> <br> <small class="text-muted">${c.telefone || ''}</small></div>
-                <div>
-                    <i class="bi bi-pencil-square text-warning action-btn" onclick="editarConselheiro('${c.id}', '${c.nome}', '${c.telefone}')"></i>
-                    <i class="bi bi-trash text-danger action-btn" onclick="deleteItem('conselheiros', '${c.id}', loadConselheiros)"></i>
-                </div>
-            </li>`;
-        });
-    }
-
-    function abrirModalConselheiro() {
-        document.getElementById('formConselheiro').reset();
-        document.getElementById('c_id').value = '';
-        document.getElementById('tituloModalConselheiro').innerText = 'Cadastrar Conselheiro';
-        new bootstrap.Modal(document.getElementById('modalConselheiro')).show();
-    }
-
-    function editarConselheiro(id, nome, telefone) {
-        document.getElementById('c_id').value = id;
-        document.getElementById('c_nome').value = nome;
-        document.getElementById('c_telefone').value = telefone === 'null' ? '' : telefone;
-        document.getElementById('tituloModalConselheiro').innerText = 'Editar Conselheiro';
-        new bootstrap.Modal(document.getElementById('modalConselheiro')).show();
-    }
-
-    document.getElementById('formConselheiro').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const id = document.getElementById('c_id').value;
-        const dados = {
-            nome: document.getElementById('c_nome').value,
-            telefone: document.getElementById('c_telefone').value
-        };
-
-        let error;
-        if(id) ({ error } = await sb.from('conselheiros').update(dados).eq('id', id));
-        else ({ error } = await sb.from('conselheiros').insert(dados));
-
-        if(error) alert('Erro: ' + error.message);
-        else {
-            bootstrap.Modal.getInstance(document.getElementById('modalConselheiro')).hide();
-            loadConselheiros();
+        function filterTeachersForEscala() {
+            const sala = document.getElementById('escala-sala').value;
+            const select = document.getElementById('escala-prof-select');
+            select.innerHTML = '';
+            
+            if(window.allTeachers) {
+                const filtered = window.allTeachers.filter(t => t.sala_preferencia === sala);
+                filtered.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t.id; // Guarda ID do professor para relação
+                    opt.text = t.nome;
+                    select.appendChild(opt);
+                });
+            }
         }
-    });
 
-    async function carregarSelectConselheiros(elementId) {
-        const { data } = await sb.from('conselheiros').select('id, nome');
-        const select = document.getElementById(elementId);
-        select.innerHTML = '<option value="">Selecione...</option>';
-        data.forEach(c => {
-            select.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
-        });
-    }
+        async function saveEscala() {
+            const dataCulto = document.getElementById('escala-date').value;
+            const sala = document.getElementById('escala-sala').value;
+            const select = document.getElementById('escala-prof-select');
+            const selectedOpts = Array.from(select.selectedOptions).map(opt => opt.value);
 
-    // --- VERSÍCULOS ---
-    async function loadVersiculos() {
-        const { data, error } = await sb.from('versiculos').select('*').order('created_at', { ascending: false });
-        if(error) return;
-        
-        const container = document.getElementById('container-versiculos');
-        container.innerHTML = '';
+            if(!dataCulto || selectedOpts.length === 0) return alert("Preencha a data e escolha professores");
 
-        if(data.length === 0) container.innerHTML = '<p class="text-muted p-3">Nenhum versículo cadastrado.</p>';
+            // SIMPLIFICAÇÃO: Criação limpa do objeto de inserção
+            const inserts = selectedOpts.map(pid => {
+                return {
+                    data_culto: dataCulto,
+                    sala: sala,
+                    professor_id: pid // Usa o ID vindo do select. Certifique-se que é o tipo correto.
+                };
+            });
 
-        data.forEach(v => {
-            const card = `
-            <div class="col-md-6 mb-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <blockquote class="blockquote mb-0">
-                            <p class="fs-6">"${v.texto}"</p>
-                            <footer class="blockquote-footer">${v.referencia}</footer>
-                        </blockquote>
-                    </div>
-                    <div class="card-footer bg-white border-top-0 text-end">
-                         <button class="btn btn-sm btn-outline-danger" onclick="deleteItem('versiculos', '${v.id}', loadVersiculos)">Excluir</button>
-                    </div>
-                </div>
-            </div>`;
-            container.innerHTML += card;
-        });
-    }
-
-    function abrirModalVersiculo() {
-        document.getElementById('formVersiculo').reset();
-        new bootstrap.Modal(document.getElementById('modalVersiculo')).show();
-    }
-
-    document.getElementById('formVersiculo').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const texto = document.getElementById('v_texto').value;
-        const referencia = document.getElementById('v_referencia').value;
-
-        const { error } = await sb.from('versiculos').insert({ texto, referencia });
-        
-        if(error) alert('Erro: ' + error.message);
-        else {
-            bootstrap.Modal.getInstance(document.getElementById('modalVersiculo')).hide();
-            loadVersiculos();
+            const { error } = await supabase.from('Escala2').insert(inserts);
+            
+            if(error) {
+                console.error(error);
+                alert("Erro ao escalar: " + error.message);
+            } else {
+                alert("Escala salva!");
+                loadEscalas();
+            }
         }
-    });
 
-    // Iniciar
-    loadDashboard();
+        async function loadEscalas() {
+            const { data } = await supabase.from('Escala2')
+                .select('*, professores(nome)')
+                .order('data_culto', { ascending: true });
+            
+            const container = document.getElementById('escala-list');
+            container.innerHTML = '';
 
-</script>
+            if(data) {
+                const grouped = {};
+                data.forEach(item => {
+                    const key = `${item.data_culto} - Sala ${item.sala}`;
+                    if(!grouped[key]) grouped[key] = [];
+                    // Tratamento seguro para caso o professor tenha sido deletado
+                    if (item.professores && item.professores.nome) {
+                        grouped[key].push(item.professores.nome);
+                    } else {
+                        grouped[key].push("(Prof. Removido)");
+                    }
+                });
 
+                for (const [key, profs] of Object.entries(grouped)) {
+                    container.innerHTML += `
+                        <div class="border p-3 rounded bg-gray-50">
+                            <h4 class="font-bold text-blue-600">${key}</h4>
+                            <p class="text-sm text-gray-700 mt-1">${profs.join(', ')}</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // --- CHECK-IN / QR CODE ---
+        let html5QrcodeScanner = null;
+
+        function startScanner() {
+            if(html5QrcodeScanner) return; 
+
+            html5QrcodeScanner = new Html5Qrcode("reader");
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            
+            html5QrcodeScanner.start({ facingMode: "environment" }, config, onScanSuccess)
+            .catch(err => {
+                 console.log("Erro câmera traseira, tentando padrão", err);
+            });
+            
+            document.getElementById('escala-date').valueAsDate = new Date();
+            loadActiveKids();
+        }
+
+        function stopScanner() {
+            if(html5QrcodeScanner) {
+                html5QrcodeScanner.stop().then(() => {
+                    html5QrcodeScanner.clear();
+                    html5QrcodeScanner = null;
+                }).catch(err => console.log(err));
+            }
+        }
+
+        async function onScanSuccess(decodedText, decodedResult) {
+            document.getElementById('scan-result').innerText = `QR Lido: ${decodedText}`;
+            document.getElementById('scan-result').classList.remove('hidden');
+
+            // Busca sessão aberta usando o QR
+            const { data: activeSession } = await supabase
+                .from('frequencia')
+                .select('*')
+                .eq('qr_id', decodedText)
+                .is('hora_saida', null) 
+                .single();
+
+            if (activeSession) {
+                // CHECK-OUT
+                const { error } = await supabase
+                    .from('frequencia')
+                    .update({ hora_saida: new Date().toISOString(), status: 'finalizado' })
+                    .eq('id', activeSession.id); // Aqui precisamos do ID da linha para atualizar, isso é normal
+                
+                if(!error) {
+                    document.getElementById('entry-form').classList.add('hidden');
+                    document.getElementById('exit-msg').classList.remove('hidden');
+                    document.getElementById('exit-details').innerText = `${activeSession.nome_crianca} saiu da sala ${activeSession.sala}.`;
+                    loadActiveKids();
+                    setTimeout(() => { document.getElementById('exit-msg').classList.add('hidden'); }, 5000);
+                }
+            } else {
+                // CHECK-IN (Preparação)
+                document.getElementById('exit-msg').classList.add('hidden');
+                document.getElementById('entry-form').classList.remove('hidden');
+                document.getElementById('entry-qr').value = decodedText;
+                
+                // Tenta preencher dados anteriores
+                const { data: lastRecord } = await supabase
+                    .from('frequencia')
+                    .select('*')
+                    .eq('qr_id', decodedText)
+                    .order('hora_entrada', { ascending: false })
+                    .limit(1)
+                    .single();
+                
+                if(lastRecord) {
+                    document.getElementById('entry-name').value = lastRecord.nome_crianca;
+                    document.getElementById('entry-age').value = lastRecord.idade;
+                    document.getElementById('entry-parent').value = lastRecord.responsavel_nome;
+                    autoSelectRoom();
+                } else {
+                    document.getElementById('entry-name').value = '';
+                    document.getElementById('entry-age').value = '';
+                }
+            }
+        }
+
+        function autoSelectRoom() {
+            const age = parseInt(document.getElementById('entry-age').value);
+            const select = document.getElementById('entry-room');
+            if(isNaN(age)) return;
+
+            if (age <= 2) select.value = "0-2";
+            else if (age <= 5) select.value = "3-5";
+            else if (age <= 8) select.value = "6-8";
+            else if (age <= 12) select.value = "9-12";
+        }
+
+        async function confirmCheckIn() {
+            const qr = document.getElementById('entry-qr').value;
+            const nome = document.getElementById('entry-name').value;
+            const idade = document.getElementById('entry-age').value;
+            const sala = document.getElementById('entry-room').value;
+            const resp = document.getElementById('entry-parent').value;
+
+            if(!nome || !sala) return alert("Preencha os dados");
+
+            // SIMPLIFICAÇÃO: Objeto limpo para inserção.
+            // Certifique-se que a coluna 'id' no banco é Identity (auto-increment)
+            const registroEntrada = {
+                qr_id: qr,
+                nome_crianca: nome,
+                idade: parseInt(idade), // Força número inteiro
+                sala: sala,
+                responsavel_nome: resp,
+                data_culto: new Date().toISOString().split('T')[0]
+            };
+
+            const { error } = await supabase.from('frequencia').insert([registroEntrada]);
+
+            if(error) {
+                console.error(error);
+                alert("Erro ao registrar entrada. Verifique o console.");
+            } else {
+                document.getElementById('entry-form').classList.add('hidden');
+                alert("Entrada Registrada!");
+                loadActiveKids();
+            }
+        }
+
+        async function loadActiveKids() {
+            const { data } = await supabase
+                .from('frequencia')
+                .select('*')
+                .is('hora_saida', null)
+                .order('hora_entrada', { ascending: false });
+            
+            const tbody = document.getElementById('active-kids-list');
+            tbody.innerHTML = '';
+            
+            if(data) {
+                data.forEach(k => {
+                    const hora = new Date(k.hora_entrada).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    tbody.innerHTML += `
+                        <tr class="border-b">
+                            <td class="p-2 font-bold">${k.nome_crianca} <span class="text-xs text-gray-400">(${k.idade}a)</span></td>
+                            <td class="p-2"><span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded">${k.sala}</span></td>
+                            <td class="p-2 text-xs text-gray-500">${hora}</td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        // --- DASHBOARD ANALYTICS ---
+        async function loadDashboard() {
+            const { count: kidsCount } = await supabase.from('frequencia').select('*', { count: 'exact' }).is('hora_saida', null);
+            document.getElementById('dash-total-kids').innerText = kidsCount || 0;
+
+            const today = new Date().toISOString().split('T')[0];
+            const { count: profCount } = await supabase.from('Escala2').select('*', { count: 'exact' }).eq('data_culto', today);
+            document.getElementById('dash-total-teachers').innerText = profCount || 0;
+
+            const { data: kidsData } = await supabase.from('frequencia').select('sala').is('hora_saida', null);
+            
+            const counts = { '0-2': 0, '3-5': 0, '6-8': 0, '9-12': 0 };
+            if(kidsData) {
+                kidsData.forEach(k => { if(counts[k.sala] !== undefined) counts[k.sala]++; });
+            }
+
+            let maxRoom = '-';
+            let maxVal = 0;
+            for(const [room, val] of Object.entries(counts)) {
+                if(val > maxVal) { maxVal = val; maxRoom = room; }
+            }
+            document.getElementById('dash-busy-room').innerText = maxRoom;
+
+            const ctx = document.getElementById('kidsChart').getContext('2d');
+            if(window.myChart) window.myChart.destroy(); 
+            
+            window.myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['0-2 Anos', '3-5 Anos', '6-8 Anos', '9-12 Anos'],
+                    datasets: [{
+                        label: 'Crianças Presentes',
+                        data: [counts['0-2'], counts['3-5'], counts['6-8'], counts['9-12']],
+                        backgroundColor: ['#60a5fa', '#34d399', '#f472b6', '#a78bfa']
+                    }]
+                }
+            });
+
+            const { data: logs } = await supabase.from('frequencia').select('nome_crianca, status, hora_entrada, hora_saida').order('hora_entrada', {ascending: false}).limit(5);
+            const logContainer = document.getElementById('recent-activity');
+            logContainer.innerHTML = '';
+            if(logs) {
+                logs.forEach(l => {
+                    const action = l.status === 'presente' ? 'Entrou' : 'Saiu';
+                    const time = l.status === 'presente' ? new Date(l.hora_entrada).toLocaleTimeString() : new Date(l.hora_saida).toLocaleTimeString();
+                    const color = l.status === 'presente' ? 'text-green-600' : 'text-red-600';
+                    logContainer.innerHTML += `<li class="flex justify-between border-b pb-1"><span>${l.nome_crianca}</span> <span class="${color} font-bold text-xs">${action} às ${time}</span></li>`;
+                });
+            }
+        }
+
+        // Inicializar Dashboard ao abrir
+        showSection('dashboard');
+
+    </script>
 </body>
 </html>
-
-
