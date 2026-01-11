@@ -134,7 +134,7 @@
         }
         
         .count-name { 
-            font-size: 0.9rem; 
+            font-size: 0.85rem; 
             text-transform: uppercase; 
             letter-spacing: 1px;
             color: var(--text-muted);
@@ -142,16 +142,16 @@
         }
 
         /* Cores Específicas Modernas */
-        .border-decisao { border-left: none !important; border-bottom: 4px solid #3b82f6; }
-        .border-decisao .count-numbers { color: #3b82f6; }
-        
-        .border-nascimento { border-left: none !important; border-bottom: 4px solid #10b981; }
+        .border-total { border-bottom: 4px solid #667eea; }
+        .border-total .count-numbers { color: #5a67d8; }
+
+        .border-nascimento { border-bottom: 4px solid #10b981; }
         .border-nascimento .count-numbers { color: #10b981; }
         
-        .border-batismo { border-left: none !important; border-bottom: 4px solid #f59e0b; }
+        .border-batismo { border-bottom: 4px solid #f59e0b; }
         .border-batismo .count-numbers { color: #f59e0b; }
         
-        .border-reconciliacao { border-left: none !important; border-bottom: 4px solid #ef4444; }
+        .border-reconciliacao { border-bottom: 4px solid #ef4444; }
         .border-reconciliacao .count-numbers { color: #ef4444; }
 
         /* --- Tables --- */
@@ -244,7 +244,7 @@
         <li class="nav-item"><a class="nav-link" onclick="showSection('versiculos'); toggleMobileMenu()"><i class="bi bi-book-half"></i> Versículos</a></li>
     </ul>
     <div class="mt-auto p-4 text-center">
-        <small style="opacity: 0.5;">Versão 2.0</small>
+        <small style="opacity: 0.5;">Versão 2.1</small>
     </div>
 </div>
 
@@ -261,17 +261,17 @@
         <div class="d-flex justify-content-between align-items-end mb-4">
             <div>
                 <h2 class="fw-bold text-dark m-0">Visão Geral</h2>
-                <p class="text-muted m-0">Acompanhamento em tempo real do Reino</p>
+                <p class="text-muted m-0">Acompanhamento estatístico do Reino</p>
             </div>
-            <span class="badge bg-light text-dark shadow-sm border"><i class="bi bi-clock"></i> Hoje</span>
+            <span class="badge bg-light text-dark shadow-sm border"><i class="bi bi-clock"></i> Atualizado Agora</span>
         </div>
 
-        <div class="row g-4 mb-5">
+        <div class="row g-4 mb-4">
             <div class="col-md-3">
-                <div class="card-counter border-decisao">
-                    <i class="bi bi-heart-fill text-primary"></i>
-                    <span class="count-numbers" id="count-decisao">0</span>
-                    <span class="count-name">Decisões</span>
+                <div class="card-counter border-total">
+                    <i class="bi bi-people-fill text-primary"></i>
+                    <span class="count-numbers" id="count-total">0</span>
+                    <span class="count-name">Total de Decisões</span>
                 </div>
             </div>
             <div class="col-md-3">
@@ -297,19 +297,42 @@
             </div>
         </div>
 
-        <div class="row g-4">
-            <div class="col-lg-7">
+        <div class="row g-4 mb-4">
+            <div class="col-lg-8">
                 <div class="card p-4 h-100">
-                    <h5 class="fw-bold mb-4 text-secondary">Distribuição de Decisões</h5>
-                    <div style="max-height: 300px; position: relative;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold text-secondary m-0"><i class="bi bi-graph-up-arrow me-2"></i>Evolução Mensal</h5>
+                    </div>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold text-secondary m-0"><i class="bi bi-calendar-check me-2"></i>Por Culto</h5>
+                    </div>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="serviceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card p-4 h-100">
+                    <h5 class="fw-bold mb-4 text-secondary">Tipos de Decisão</h5>
+                    <div style="max-height: 250px; position: relative; display: flex; justify-content: center;">
                         <canvas id="decisoesChart"></canvas>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-5">
-                <div class="card p-4 verse-card-dashboard mb-4">
+            <div class="col-lg-8">
+                <div class="card p-4 verse-card-dashboard mb-3">
                     <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-quote"></i> Palavra do Dia</h5>
-                    <blockquote class="blockquote text-center mt-3" id="dash-versiculo">
+                    <blockquote class="blockquote text-center mt-2" id="dash-versiculo">
                         <p class="mb-2 fst-italic fs-5" id="dash-texto">"Carregando..."</p>
                         <footer class="blockquote-footer mt-2" id="dash-ref"> Bíblia </footer>
                     </blockquote>
@@ -550,7 +573,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Função extra apenas para fechar o menu mobile ao clicar (Melhoria de UX)
     function toggleMobileMenu() {
         if(window.innerWidth < 768) {
             document.getElementById('sidebarMenu').classList.remove('active');
@@ -559,15 +581,14 @@
 
     // --- CONFIGURAÇÃO SUPABASE ---
     const SUPABASE_URL = 'https://nekbbkenxcukoortusge.supabase.co';
-    // *** MANTENDO SUA CHAVE ***
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5la2Jia2VueGN1a29vcnR1c2dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzOTU5MDIsImV4cCI6MjA3ODk3MTkwMn0.D72914Vyz1du1ZDKoNDdwT7YI-D8WPgZe38LbBV2bfc'; 
     
-    // Inicializa o cliente Supabase
     window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const sb = window.supabase;
 
     let allPessoas = [];
     let conselheirosCache = {};
+    let charts = {}; // Objeto para guardar as instâncias dos gráficos
 
     // --- NAVEGAÇÃO ---
     function showSection(sectionId) {
@@ -575,7 +596,6 @@
         document.getElementById(sectionId).classList.remove('hidden');
         document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
         
-        // Ativa o link correto no menu (loop simples para achar o pai)
         const links = document.querySelectorAll('.nav-link');
         links.forEach(link => {
             if(link.getAttribute('onclick').includes(sectionId)) {
@@ -606,46 +626,162 @@
         }
     }
 
-    // --- DASHBOARD ---
+    // --- DASHBOARD ATUALIZADO ---
     async function loadDashboard() {
-        const { data, error } = await sb.from('pessoas').select('decisao, nome, created_at').order('created_at', {ascending: false});
+        const { data, error } = await sb.from('pessoas').select('decisao, nome, created_at').order('created_at', {ascending: true}); // Ascending para timeline correta
         if(error) return console.error(error);
 
+        // 1. Contadores Gerais
         const counts = {
-            'Decisão': 0, 'Novo Nascimento': 0, 
-            'Batismo Espírito Santo': 0, 'Reconciliação': 0
+            'Novo Nascimento': 0, 
+            'Batismo Espírito Santo': 0, 
+            'Reconciliação': 0
         };
 
+        let totalGeral = 0;
+        const monthlyStats = {}; // { 'Jan/24': 10, 'Fev/24': 5 }
+        const serviceStats = { 'Domingo': 0, 'Terça': 0, 'Quinta': 0, 'Outros': 0 };
+
         data.forEach(p => {
+            totalGeral++; // Totalizador (Soma de todos)
+            
+            // Contagem por Tipo
             let d = p.decisao;
-            if (d === 'Aceitou Jesus') d = 'Decisão';
             if (d === 'Volta para Jesus') d = 'Reconciliação';
+            if (d === 'Aceitou Jesus') d = 'Novo Nascimento'; // Assumindo mapping se houver dados antigos
+            
             if (counts[d] !== undefined) counts[d]++;
+
+            // Lógica por Mês
+            const date = new Date(p.created_at);
+            const monthKey = date.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+            monthlyStats[monthKey] = (monthlyStats[monthKey] || 0) + 1;
+
+            // Lógica por Dia da Semana (Culto)
+            // 0=Domingo, 1=Segunda, 2=Terça, 3=Quarta, 4=Quinta, 5=Sexta, 6=Sábado
+            const dayOfWeek = date.getDay();
+            
+            if (dayOfWeek === 0) serviceStats['Domingo']++;
+            else if (dayOfWeek === 2) serviceStats['Terça']++;
+            else if (dayOfWeek === 4) serviceStats['Quinta']++;
+            else serviceStats['Outros']++;
         });
 
-        document.getElementById('count-decisao').innerText = counts['Decisão'];
+        // Atualiza Cards na Tela
+        document.getElementById('count-total').innerText = totalGeral;
         document.getElementById('count-nascimento').innerText = counts['Novo Nascimento'];
         document.getElementById('count-batismo').innerText = counts['Batismo Espírito Santo'];
         document.getElementById('count-reconciliacao').innerText = counts['Reconciliação'];
 
+        // Lista Recente (Pega os últimos 5 do array reverso)
         const recentList = document.getElementById('recent-list');
         recentList.innerHTML = '';
-        data.slice(0, 5).forEach(p => {
+        const recentData = [...data].reverse().slice(0, 5); // Clona e inverte para pegar os mais novos
+        
+        recentData.forEach(p => {
             let label = p.decisao;
             let badgeClass = 'bg-secondary';
+            if(label === 'Aceitou Jesus') label = 'Novo Nascimento';
+            if(label === 'Volta para Jesus') label = 'Reconciliação';
             
-            if(label === 'Aceitou Jesus') { label = 'Decisão'; badgeClass = 'bg-primary'; }
-            else if(label === 'Volta para Jesus') { label = 'Reconciliação'; badgeClass = 'bg-danger'; }
+            if(label === 'Reconciliação') badgeClass = 'bg-danger';
             else if(label === 'Novo Nascimento') badgeClass = 'bg-success';
             else if(label === 'Batismo Espírito Santo') badgeClass = 'bg-warning text-dark';
             
             recentList.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-3 border-0 border-bottom">
-                <span class="fw-medium">${p.nome}</span> <span class="badge ${badgeClass} rounded-pill shadow-sm" style="font-size: 0.75rem;">${label}</span>
+                <span class="fw-medium">${p.nome}</span> <span class="badge ${badgeClass} rounded-pill shadow-sm" style="font-size: 0.7rem;">${label}</span>
             </li>`;
         });
 
-        renderChart(counts);
+        renderCharts(counts, monthlyStats, serviceStats);
         loadVersiculoAleatorio();
+    }
+
+    function renderCharts(counts, monthlyStats, serviceStats) {
+        // --- 1. Gráfico Distribuição (Doughnut) ---
+        const ctxDecisao = document.getElementById('decisoesChart').getContext('2d');
+        if(charts.decisao) charts.decisao.destroy();
+        
+        charts.decisao = new Chart(ctxDecisao, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(counts),
+                datasets: [{
+                    data: Object.values(counts),
+                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+
+        // --- 2. Gráfico Mensal (Area/Line) ---
+        const ctxMonthly = document.getElementById('monthlyChart').getContext('2d');
+        if(charts.monthly) charts.monthly.destroy();
+
+        charts.monthly = new Chart(ctxMonthly, {
+            type: 'line',
+            data: {
+                labels: Object.keys(monthlyStats),
+                datasets: [{
+                    label: 'Vidas por Mês',
+                    data: Object.values(monthlyStats),
+                    borderColor: '#5a67d8',
+                    backgroundColor: 'rgba(90, 103, 216, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4 // Curva suave
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // --- 3. Gráfico por Culto (Bar) ---
+        const ctxService = document.getElementById('serviceChart').getContext('2d');
+        if(charts.service) charts.service.destroy();
+
+        // Filtra "Outros" se for zero para ficar mais limpo
+        const serviceLabels = ['Domingo', 'Terça', 'Quinta'];
+        const serviceData = [serviceStats['Domingo'], serviceStats['Terça'], serviceStats['Quinta']];
+        if(serviceStats['Outros'] > 0) {
+            serviceLabels.push('Outros');
+            serviceData.push(serviceStats['Outros']);
+        }
+
+        charts.service = new Chart(ctxService, {
+            type: 'bar',
+            data: {
+                labels: serviceLabels,
+                datasets: [{
+                    label: 'Decisões',
+                    data: serviceData,
+                    backgroundColor: ['#667eea', '#764ba2', '#a3bffa', '#e2e8f0'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { beginAtZero: true, grid: { display: false } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
     }
 
     async function loadVersiculoAleatorio() {
@@ -660,42 +796,13 @@
         }
     }
 
-    let myChart = null;
-    function renderChart(counts) {
-        const ctx = document.getElementById('decisoesChart').getContext('2d');
-        if(myChart) myChart.destroy();
-        myChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(counts),
-                datasets: [{
-                    data: Object.values(counts),
-                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
-                    borderWidth: 0,
-                    hoverOffset: 10
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { usePointStyle: true, padding: 20 }
-                    }
-                },
-                layout: { padding: 10 }
-            }
-        });
-    }
-
-    // --- PESSOAS ---
+    // --- PESSOAS (Lógica Mantida, apenas update tabela) ---
     async function loadPessoas() {
         const { data, error } = await sb.from('pessoas').select('*, conselheiros(nome)').order('created_at', { ascending: false });
         if(error) return;
         
         allPessoas = data.map(p => {
-            if(p.decisao === 'Aceitou Jesus') p.decisao = 'Decisão';
+            if(p.decisao === 'Aceitou Jesus') p.decisao = 'Novo Nascimento'; // Ajustando label antigo
             if(p.decisao === 'Volta para Jesus') p.decisao = 'Reconciliação';
             return p;
         });
@@ -710,8 +817,7 @@
             const conselheiroNome = p.conselheiros ? `<span class="text-primary fw-medium"><i class="bi bi-person-check-fill me-1"></i>${p.conselheiros.nome}</span>` : '<span class="text-muted small">Pendente</span>';
             
             let badgeClass = 'bg-secondary';
-            if(p.decisao === 'Decisão') badgeClass = 'bg-primary';
-            else if(p.decisao === 'Reconciliação') badgeClass = 'bg-danger';
+            if(p.decisao === 'Reconciliação') badgeClass = 'bg-danger';
             else if(p.decisao === 'Novo Nascimento') badgeClass = 'bg-success';
             else if(p.decisao === 'Batismo Espírito Santo') badgeClass = 'bg-warning text-dark';
 
@@ -789,7 +895,7 @@
         }
     });
 
-    // --- ESCALAS ---
+    // --- ESCALAS (Mantido) ---
     async function loadEscalas() {
         await cacheConselheiros();
         const { data, error } = await sb
@@ -867,7 +973,6 @@
         new bootstrap.Modal(document.getElementById('modalEscala')).show();
     }
 
-    // --- FORM ESCALA ---
     document.getElementById('formEscala').addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('e_id').value;
@@ -887,7 +992,7 @@
         }
     });
 
-    // --- CONSELHEIROS ---
+    // --- CONSELHEIROS E VERSÍCULOS (Mantidos) ---
     async function loadConselheiros() {
         const { data, error } = await sb.from('conselheiros').select('*').order('nome');
         if(error) return;
@@ -927,7 +1032,6 @@
         new bootstrap.Modal(document.getElementById('modalConselheiro')).show();
     }
 
-    // --- FORM CONSELHEIRO ---
     document.getElementById('formConselheiro').addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('c_id').value;
@@ -953,18 +1057,14 @@
         }
     }
 
-    // --- VERSÍCULOS ---
     async function loadVersiculos() {
         const { data, error } = await sb.from('versiculos').select('*').order('created_at', { ascending: false });
         if(error) return;
-        
         const container = document.getElementById('container-versiculos');
         container.innerHTML = '';
-
         if(data.length === 0) container.innerHTML = '<div class="col-12 text-center text-muted py-5">Nenhum versículo cadastrado.</div>';
-
         data.forEach(v => {
-            const card = `
+            container.innerHTML += `
             <div class="col-md-6 mb-3">
                 <div class="card h-100 shadow-sm border-0">
                     <div class="card-body p-4 text-center d-flex flex-column justify-content-center">
@@ -977,7 +1077,6 @@
                     </div>
                 </div>
             </div>`;
-            container.innerHTML += card;
         });
     }
 
