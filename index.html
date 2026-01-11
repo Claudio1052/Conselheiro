@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão de Vidas & Escalas</title>
+    <title>Gestão de Vidas & Escalas | Kingdom Manager</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
@@ -12,226 +16,443 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        body { background-color: #f4f6f9; }
-        .sidebar { min-height: 100vh; background: #2c3e50; color: white; }
-        .nav-link { color: rgba(255,255,255,0.8); cursor: pointer; }
-        .nav-link:hover, .nav-link.active { color: white; background: rgba(255,255,255,0.1); border-radius: 5px; }
-        .card-counter { box-shadow: 2px 2px 10px #DADADA; margin: 5px; padding: 20px 10px; background-color: #fff; height: 100px; border-radius: 5px; transition: .3s linear all; }
-        .card-counter:hover { box-shadow: 4px 4px 20px #DADADA; transform: scale(1.02); }
-        .card-counter i { font-size: 5em; opacity: 0.2; position: absolute; right: 10px; top: 10px; }
-        .bg-primary-light { background-color: #e3f2fd; }
-        .hidden { display: none; }
-        /* Cores específicas para decisões */
-        .border-decisao { border-left: 5px solid #007bff; }
-        .border-nascimento { border-left: 5px solid #28a745; }
-        .border-batismo { border-left: 5px solid #ffc107; }
-        .border-reconciliacao { border-left: 5px solid #dc3545; }
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --sidebar-width: 260px;
+            --bg-body: #f3f4f8;
+            --text-dark: #2d3748;
+            --text-muted: #718096;
+            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            --card-radius: 16px;
+        }
+
+        body { 
+            background-color: var(--bg-body); 
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        /* --- Sidebar Styling --- */
+        .sidebar { 
+            width: var(--sidebar-width);
+            height: 100vh; 
+            background: var(--primary-gradient); 
+            color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            transition: all 0.3s;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-link { 
+            color: rgba(255,255,255,0.7); 
+            cursor: pointer; 
+            padding: 12px 20px;
+            margin: 8px 15px;
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-link:hover {
+            color: white;
+            background: rgba(255,255,255,0.15);
+            transform: translateX(5px);
+        }
+
+        .nav-link.active { 
+            color: #5a67d8; 
+            background: white; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .nav-link i { font-size: 1.1rem; }
+
+        /* --- Main Content --- */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        /* --- Cards & Containers --- */
+        .card {
+            border: none;
+            border-radius: var(--card-radius);
+            box-shadow: var(--card-shadow);
+            background: white;
+            margin-bottom: 1.5rem;
+            transition: transform 0.2s ease;
+        }
         
-        .action-btn { cursor: pointer; margin-left: 5px; }
+        /* --- Dashboard Counters --- */
+        .card-counter { 
+            position: relative;
+            padding: 25px; 
+            background-color: #fff; 
+            height: auto; 
+            border-radius: var(--card-radius); 
+            transition: .3s linear all;
+            border: none;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .card-counter:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .card-counter i { 
+            font-size: 3.5rem; 
+            position: absolute; 
+            right: -10px; 
+            top: -10px; 
+            opacity: 0.15; 
+            transform: rotate(-15deg);
+        }
+
+        .count-numbers { 
+            font-size: 2.5rem; 
+            font-weight: 700; 
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+        
+        .count-name { 
+            font-size: 0.9rem; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Cores Específicas Modernas */
+        .border-decisao { border-left: none !important; border-bottom: 4px solid #3b82f6; }
+        .border-decisao .count-numbers { color: #3b82f6; }
+        
+        .border-nascimento { border-left: none !important; border-bottom: 4px solid #10b981; }
+        .border-nascimento .count-numbers { color: #10b981; }
+        
+        .border-batismo { border-left: none !important; border-bottom: 4px solid #f59e0b; }
+        .border-batismo .count-numbers { color: #f59e0b; }
+        
+        .border-reconciliacao { border-left: none !important; border-bottom: 4px solid #ef4444; }
+        .border-reconciliacao .count-numbers { color: #ef4444; }
+
+        /* --- Tables --- */
+        .table-responsive {
+            border-radius: var(--card-radius);
+            overflow: hidden;
+        }
+        .table thead th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 1rem;
+        }
+        .table td {
+            vertical-align: middle;
+            padding: 1rem;
+            color: var(--text-dark);
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        /* --- Animations --- */
+        .section { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hidden { display: none !important; }
+
+        /* --- Buttons --- */
+        .btn {
+            border-radius: 8px;
+            padding: 8px 20px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #5a67d8; border-color: #5a67d8; }
+        .btn-primary:hover { background: #4c51bf; border-color: #4c51bf; }
+        
+        .action-btn { 
+            cursor: pointer; 
+            margin-left: 10px; 
+            padding: 6px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .action-btn:hover { background-color: rgba(0,0,0,0.05); }
+
+        /* --- Verse Card --- */
+        .verse-card-dashboard {
+            background: linear-gradient(135deg, #fff 0%, #f0f4ff 100%);
+            border-left: 5px solid #5a67d8;
+        }
+        .blockquote-footer { color: #7f9cf5; font-weight: 600; }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); width: 260px; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 1rem; }
+            .nav-link.active { background: rgba(255,255,255,0.2); color: white; box-shadow: none; }
+        }
+
+        /* Custom Badge */
+        .badge { 
+            padding: 0.5em 0.8em; 
+            font-weight: 500; 
+            letter-spacing: 0.5px;
+            border-radius: 6px;
+        }
     </style>
 </head>
 <body>
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-3 col-lg-2 sidebar p-3 d-none d-md-block">
-            <h4 class="text-center mb-4"><i class="bi bi-church"></i> Gestão Vidas</h4>
-            <ul class="nav flex-column">
-                <li class="nav-item"><a class="nav-link active" onclick="showSection('dashboard')"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" onclick="showSection('pessoas')"><i class="bi bi-people"></i> Pessoas / Decisões</a></li>
-                <li class="nav-item"><a class="nav-link" onclick="showSection('escalas')"><i class="bi bi-calendar-week"></i> Escalas de Culto</a></li>
-                <li class="nav-item"><a class="nav-link" onclick="showSection('conselheiros')"><i class="bi bi-person-badge"></i> Conselheiros</a></li>
-                <li class="nav-item"><a class="nav-link" onclick="showSection('versiculos')"><i class="bi bi-book"></i> Versículos</a></li>
-            </ul>
-        </div>
-
-        <div class="col-md-9 col-lg-10 p-4">
-            
-            <div class="d-md-none mb-3">
-                <button class="btn btn-dark w-100" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu">
-                    <i class="bi bi-list"></i> Menu
-                </button>
-                <div class="collapse mt-2" id="mobileMenu">
-                    <div class="list-group">
-                        <a href="#" class="list-group-item list-group-item-action" onclick="showSection('dashboard')">Dashboard</a>
-                        <a href="#" class="list-group-item list-group-item-action" onclick="showSection('pessoas')">Pessoas</a>
-                        <a href="#" class="list-group-item list-group-item-action" onclick="showSection('escalas')">Escalas</a>
-                        <a href="#" class="list-group-item list-group-item-action" onclick="showSection('conselheiros')">Conselheiros</a>
-                        <a href="#" class="list-group-item list-group-item-action" onclick="showSection('versiculos')">Versículos</a>
-                    </div>
-                </div>
-            </div>
-
-            <div id="dashboard" class="section">
-                <h2 class="mb-4">Visão Geral do Reino</h2>
-                <div class="row text-center mb-4">
-                    <div class="col-md-3">
-                        <div class="card-counter border-decisao">
-                            <i class="bi bi-heart-fill"></i>
-                            <span class="count-numbers" id="count-decisao">0</span>
-                            <span class="count-name d-block">Decisões</span>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card-counter border-nascimento">
-                            <i class="bi bi-droplet-fill"></i>
-                            <span class="count-numbers" id="count-nascimento">0</span>
-                            <span class="count-name d-block">Novo Nascimento</span>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card-counter border-batismo">
-                            <i class="bi bi-fire"></i>
-                            <span class="count-numbers" id="count-batismo">0</span>
-                            <span class="count-name d-block">Batismo Esp. Santo</span>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card-counter border-reconciliacao">
-                            <i class="bi bi-arrow-return-left"></i>
-                            <span class="count-numbers" id="count-reconciliacao">0</span>
-                            <span class="count-name d-block">Reconciliação</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card p-3">
-                            <h5>Distribuição de Decisões</h5>
-                            <canvas id="decisoesChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card p-3">
-                            <h5>Versículo do Dia (Aleatório)</h5>
-                            <blockquote class="blockquote text-center mt-4" id="dash-versiculo">
-                                <p class="mb-0" id="dash-texto">"Carregando..."</p>
-                                <footer class="blockquote-footer mt-2" id="dash-ref"> Bíblia </footer>
-                            </blockquote>
-                        </div>
-                        <div class="card p-3 mt-3">
-                            <h5>Últimos Cadastros</h5>
-                            <ul class="list-group list-group-flush" id="recent-list"></ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="pessoas" class="section hidden">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2>Cadastro de Pessoas</h2>
-                    <button class="btn btn-primary" onclick="abrirModalPessoa()">
-                        <i class="bi bi-plus-circle"></i> Nova Pessoa
-                    </button>
-                </div>
-
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <input type="text" id="filtro-nome" class="form-control" placeholder="Buscar por nome..." onkeyup="filtrarPessoas()">
-                            </div>
-                            <div class="col-md-3">
-                                <select id="filtro-decisao" class="form-select" onchange="filtrarPessoas()">
-                                    <option value="">Todas as Decisões</option>
-                                    <option value="Reconciliação">Reconciliação</option>
-                                    <option value="Novo Nascimento">Novo Nascimento</option>
-                                    <option value="Batismo Espírito Santo">Batismo Espírito Santo</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="table-responsive bg-white rounded shadow-sm">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Nome</th>
-                                <th>Telefone</th>
-                                <th>Decisão</th>
-                                <th>Conselheiro Resp.</th>
-                                <th>Data</th>
-                                <th class="text-end">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela-pessoas"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="escalas" class="section hidden">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2>Escalas de Culto</h2>
-                    <button class="btn btn-success" onclick="abrirModalEscala()">
-                        <i class="bi bi-calendar-plus"></i> Nova Escala
-                    </button>
-                </div>
-                <div class="row" id="container-escalas"></div>
-            </div>
-
-            <div id="conselheiros" class="section hidden">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2>Conselheiros</h2>
-                    <button class="btn btn-info text-white" onclick="abrirModalConselheiro()">
-                        <i class="bi bi-person-plus"></i> Novo Conselheiro
-                    </button>
-                </div>
-                <ul class="list-group" id="lista-conselheiros"></ul>
-            </div>
-
-            <div id="versiculos" class="section hidden">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2>Banco de Versículos</h2>
-                    <button class="btn btn-warning text-white" onclick="abrirModalVersiculo()">
-                        <i class="bi bi-plus-square"></i> Novo Versículo
-                    </button>
-                </div>
-                <div class="row" id="container-versiculos"></div>
-            </div>
-
-        </div>
+<div class="sidebar d-flex flex-column" id="sidebarMenu">
+    <div class="sidebar-header text-center">
+        <h4 class="mb-0 fw-bold"><i class="bi bi-church me-2"></i>Gestão Vidas</h4>
+        <small style="opacity: 0.7;">Painel Administrativo</small>
+    </div>
+    <ul class="nav flex-column mt-3">
+        <li class="nav-item"><a class="nav-link active" onclick="showSection('dashboard'); toggleMobileMenu()"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" onclick="showSection('pessoas'); toggleMobileMenu()"><i class="bi bi-people-fill"></i> Pessoas / Decisões</a></li>
+        <li class="nav-item"><a class="nav-link" onclick="showSection('escalas'); toggleMobileMenu()"><i class="bi bi-calendar-week-fill"></i> Escalas de Culto</a></li>
+        <li class="nav-item"><a class="nav-link" onclick="showSection('conselheiros'); toggleMobileMenu()"><i class="bi bi-person-badge-fill"></i> Conselheiros</a></li>
+        <li class="nav-item"><a class="nav-link" onclick="showSection('versiculos'); toggleMobileMenu()"><i class="bi bi-book-half"></i> Versículos</a></li>
+    </ul>
+    <div class="mt-auto p-4 text-center">
+        <small style="opacity: 0.5;">Versão 2.0</small>
     </div>
 </div>
 
-<div class="modal fade" id="modalPessoa" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="tituloModalPessoa">Registrar Decisão</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<div class="main-content">
+    
+    <div class="d-md-none d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold m-0 text-primary">Gestão Vidas</h4>
+        <button class="btn btn-light shadow-sm text-primary" onclick="document.getElementById('sidebarMenu').classList.toggle('active')">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+    </div>
+
+    <div id="dashboard" class="section">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <h2 class="fw-bold text-dark m-0">Visão Geral</h2>
+                <p class="text-muted m-0">Acompanhamento em tempo real do Reino</p>
             </div>
-            <div class="modal-body">
+            <span class="badge bg-light text-dark shadow-sm border"><i class="bi bi-clock"></i> Hoje</span>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-3">
+                <div class="card-counter border-decisao">
+                    <i class="bi bi-heart-fill text-primary"></i>
+                    <span class="count-numbers" id="count-decisao">0</span>
+                    <span class="count-name">Decisões</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card-counter border-nascimento">
+                    <i class="bi bi-droplet-fill text-success"></i>
+                    <span class="count-numbers" id="count-nascimento">0</span>
+                    <span class="count-name">Novo Nascimento</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card-counter border-batismo">
+                    <i class="bi bi-fire text-warning"></i>
+                    <span class="count-numbers" id="count-batismo">0</span>
+                    <span class="count-name">Batismo Esp. Santo</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card-counter border-reconciliacao">
+                    <i class="bi bi-arrow-return-left text-danger"></i>
+                    <span class="count-numbers" id="count-reconciliacao">0</span>
+                    <span class="count-name">Reconciliação</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="card p-4 h-100">
+                    <h5 class="fw-bold mb-4 text-secondary">Distribuição de Decisões</h5>
+                    <div style="max-height: 300px; position: relative;">
+                        <canvas id="decisoesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card p-4 verse-card-dashboard mb-4">
+                    <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-quote"></i> Palavra do Dia</h5>
+                    <blockquote class="blockquote text-center mt-3" id="dash-versiculo">
+                        <p class="mb-2 fst-italic fs-5" id="dash-texto">"Carregando..."</p>
+                        <footer class="blockquote-footer mt-2" id="dash-ref"> Bíblia </footer>
+                    </blockquote>
+                </div>
+                <div class="card p-4">
+                    <h5 class="fw-bold mb-3 text-secondary">Últimos Cadastros</h5>
+                    <ul class="list-group list-group-flush" id="recent-list"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="pessoas" class="section hidden">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold m-0">Pessoas</h2>
+                <p class="text-muted m-0">Gerencie o cadastro de novos convertidos</p>
+            </div>
+            <button class="btn btn-primary shadow-sm" onclick="abrirModalPessoa()">
+                <i class="bi bi-plus-lg me-1"></i> Nova Pessoa
+            </button>
+        </div>
+
+        <div class="card p-4 mb-4">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" id="filtro-nome" class="form-control border-start-0 ps-0" placeholder="Buscar por nome..." onkeyup="filtrarPessoas()">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select id="filtro-decisao" class="form-select" onchange="filtrarPessoas()">
+                        <option value="">Todas as Decisões</option>
+                        <option value="Reconciliação">Reconciliação</option>
+                        <option value="Novo Nascimento">Novo Nascimento</option>
+                        <option value="Batismo Espírito Santo">Batismo Espírito Santo</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Nome</th>
+                            <th>Telefone</th>
+                            <th>Decisão</th>
+                            <th>Conselheiro Resp.</th>
+                            <th>Data</th>
+                            <th class="text-end pe-4">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-pessoas" class="bg-white"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="escalas" class="section hidden">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold m-0">Escalas de Culto</h2>
+                <p class="text-muted m-0">Organização dos conselheiros por culto</p>
+            </div>
+            <button class="btn btn-success text-white shadow-sm" onclick="abrirModalEscala()">
+                <i class="bi bi-calendar-plus me-1"></i> Nova Escala
+            </button>
+        </div>
+        <div class="row g-4" id="container-escalas"></div>
+    </div>
+
+    <div id="conselheiros" class="section hidden">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold m-0">Conselheiros</h2>
+                <p class="text-muted m-0">Equipe de consolidação e apoio</p>
+            </div>
+            <button class="btn btn-info text-white shadow-sm" onclick="abrirModalConselheiro()">
+                <i class="bi bi-person-plus-fill me-1"></i> Novo Conselheiro
+            </button>
+        </div>
+        <div class="card p-2">
+            <ul class="list-group list-group-flush" id="lista-conselheiros"></ul>
+        </div>
+    </div>
+
+    <div id="versiculos" class="section hidden">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold m-0">Banco de Versículos</h2>
+                <p class="text-muted m-0">Versículos para exibição aleatória no dashboard</p>
+            </div>
+            <button class="btn btn-warning text-white shadow-sm" onclick="abrirModalVersiculo()">
+                <i class="bi bi-plus-square-fill me-1"></i> Novo Versículo
+            </button>
+        </div>
+        <div class="row g-4" id="container-versiculos"></div>
+    </div>
+
+</div>
+
+<div class="modal fade" id="modalPessoa" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="tituloModalPessoa">Registrar Decisão</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
                 <form id="formPessoa">
                     <input type="hidden" id="p_id">
                     <div class="mb-3">
-                        <label>Nome Completo</label>
+                        <label class="form-label text-muted small fw-bold">NOME COMPLETO</label>
                         <input type="text" class="form-control" id="p_nome" required>
                     </div>
-                    <div class="mb-3">
-                        <label>Telefone / WhatsApp</label>
-                        <input type="text" class="form-control" id="p_telefone" placeholder="(XX) 9XXXX-XXXX">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small fw-bold">TELEFONE</label>
+                            <input type="text" class="form-control" id="p_telefone" placeholder="(XX) 9XXXX-XXXX">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small fw-bold">ENDEREÇO</label>
+                            <input type="text" class="form-control" id="p_endereco">
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label>Endereço</label>
-                        <input type="text" class="form-control" id="p_endereco">
-                    </div>
-                    <div class="mb-3">
-                        <label>Decisão</label>
+                        <label class="form-label text-muted small fw-bold">TIPO DE DECISÃO</label>
                         <select class="form-select" id="p_decisao" required>
                             <option value="Reconciliação">Reconciliação</option>
                             <option value="Novo Nascimento">Novo Nascimento</option>
                             <option value="Batismo Espírito Santo">Batismo Espírito Santo</option>
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label>Conselheiro Responsável</label>
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold">CONSELHEIRO RESPONSÁVEL</label>
                         <select class="form-select" id="p_conselheiro">
                             <option value="">Selecione...</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Salvar</button>
+                    <button type="submit" class="btn btn-primary w-100 py-2">Salvar Registro</button>
                 </form>
             </div>
         </div>
@@ -239,37 +460,39 @@
 </div>
 
 <div class="modal fade" id="modalEscala" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="tituloModalEscala">Agendar Escala</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title fw-bold" id="tituloModalEscala">Agendar Escala</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4">
                 <form id="formEscala">
                     <input type="hidden" id="e_id">
                     <div class="mb-3">
-                        <label class="fw-bold">1º Conselheiro</label>
+                        <label class="form-label text-muted small fw-bold">1º CONSELHEIRO</label>
                         <select class="form-select" id="e_conselheiro1" required></select>
                     </div>
                     <div class="mb-3">
-                        <label class="fw-bold">2º Conselheiro</label>
+                        <label class="form-label text-muted small fw-bold">2º CONSELHEIRO</label>
                         <select class="form-select" id="e_conselheiro2" required></select>
                     </div>
-                    <div class="mb-3">
-                        <label>Culto</label>
-                        <select class="form-select" id="e_culto" required>
-                            <option value="Domingo Manhã">Domingo Manhã</option>
-                            <option value="Domingo Noite">Domingo Noite</option>
-                            <option value="Terça">Terça</option>
-                            <option value="Quinta">Quinta</option>
-                        </select>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label text-muted small fw-bold">CULTO</label>
+                            <select class="form-select" id="e_culto" required>
+                                <option value="Domingo Manhã">Domingo Manhã</option>
+                                <option value="Domingo Noite">Domingo Noite</option>
+                                <option value="Terça">Terça</option>
+                                <option value="Quinta">Quinta</option>
+                            </select>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label text-muted small fw-bold">DATA</label>
+                            <input type="date" class="form-control" id="e_data" required>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label>Data</label>
-                        <input type="date" class="form-control" id="e_data" required>
-                    </div>
-                    <button type="submit" class="btn btn-success w-100">Agendar</button>
+                    <button type="submit" class="btn btn-success text-white w-100 py-2">Agendar</button>
                 </form>
             </div>
         </div>
@@ -277,24 +500,24 @@
 </div>
 
 <div class="modal fade" id="modalConselheiro" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="tituloModalConselheiro">Cadastrar Conselheiro</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title fw-bold" id="tituloModalConselheiro">Cadastrar Conselheiro</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4">
                 <form id="formConselheiro">
                     <input type="hidden" id="c_id">
                     <div class="mb-3">
-                        <label>Nome</label>
+                        <label class="form-label text-muted small fw-bold">NOME</label>
                         <input type="text" class="form-control" id="c_nome" required>
                     </div>
-                    <div class="mb-3">
-                        <label>Telefone</label>
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold">TELEFONE</label>
                         <input type="text" class="form-control" id="c_telefone">
                     </div>
-                    <button type="submit" class="btn btn-info text-white w-100">Salvar</button>
+                    <button type="submit" class="btn btn-info text-white w-100 py-2">Salvar</button>
                 </form>
             </div>
         </div>
@@ -302,23 +525,23 @@
 </div>
 
 <div class="modal fade" id="modalVersiculo" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Adicionar Versículo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title fw-bold">Adicionar Versículo</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4">
                 <form id="formVersiculo">
                     <div class="mb-3">
-                        <label>Texto do Versículo</label>
+                        <label class="form-label text-muted small fw-bold">TEXTO BÍBLICO</label>
                         <textarea class="form-control" id="v_texto" rows="3" required></textarea>
                     </div>
-                    <div class="mb-3">
-                        <label>Referência (Ex: João 3:16)</label>
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold">REFERÊNCIA (Ex: João 3:16)</label>
                         <input type="text" class="form-control" id="v_referencia" required>
                     </div>
-                    <button type="submit" class="btn btn-warning w-100">Adicionar</button>
+                    <button type="submit" class="btn btn-warning text-white w-100 py-2">Adicionar</button>
                 </form>
             </div>
         </div>
@@ -327,9 +550,16 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // Função extra apenas para fechar o menu mobile ao clicar (Melhoria de UX)
+    function toggleMobileMenu() {
+        if(window.innerWidth < 768) {
+            document.getElementById('sidebarMenu').classList.remove('active');
+        }
+    }
+
     // --- CONFIGURAÇÃO SUPABASE ---
     const SUPABASE_URL = 'https://nekbbkenxcukoortusge.supabase.co';
-    // *** INSIRA SUA CHAVE ANON AQUI ***
+    // *** MANTENDO SUA CHAVE ***
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5la2Jia2VueGN1a29vcnR1c2dlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzOTU5MDIsImV4cCI6MjA3ODk3MTkwMn0.D72914Vyz1du1ZDKoNDdwT7YI-D8WPgZe38LbBV2bfc'; 
     
     // Inicializa o cliente Supabase
@@ -345,6 +575,14 @@
         document.getElementById(sectionId).classList.remove('hidden');
         document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
         
+        // Ativa o link correto no menu (loop simples para achar o pai)
+        const links = document.querySelectorAll('.nav-link');
+        links.forEach(link => {
+            if(link.getAttribute('onclick').includes(sectionId)) {
+                link.classList.add('active');
+            }
+        });
+
         if(sectionId === 'dashboard') loadDashboard();
         if(sectionId === 'pessoas') loadPessoas();
         if(sectionId === 'escalas') loadEscalas();
@@ -394,11 +632,15 @@
         recentList.innerHTML = '';
         data.slice(0, 5).forEach(p => {
             let label = p.decisao;
-            if(label === 'Aceitou Jesus') label = 'Decisão';
-            if(label === 'Volta para Jesus') label = 'Reconciliação';
+            let badgeClass = 'bg-secondary';
             
-            recentList.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                ${p.nome} <span class="badge bg-secondary rounded-pill">${label}</span>
+            if(label === 'Aceitou Jesus') { label = 'Decisão'; badgeClass = 'bg-primary'; }
+            else if(label === 'Volta para Jesus') { label = 'Reconciliação'; badgeClass = 'bg-danger'; }
+            else if(label === 'Novo Nascimento') badgeClass = 'bg-success';
+            else if(label === 'Batismo Espírito Santo') badgeClass = 'bg-warning text-dark';
+            
+            recentList.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-3 border-0 border-bottom">
+                <span class="fw-medium">${p.nome}</span> <span class="badge ${badgeClass} rounded-pill shadow-sm" style="font-size: 0.75rem;">${label}</span>
             </li>`;
         });
 
@@ -428,15 +670,27 @@
                 labels: Object.keys(counts),
                 datasets: [{
                     data: Object.values(counts),
-                    backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545']
+                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
+                    borderWidth: 0,
+                    hoverOffset: 10
                 }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { usePointStyle: true, padding: 20 }
+                    }
+                },
+                layout: { padding: 10 }
             }
         });
     }
 
     // --- PESSOAS ---
     async function loadPessoas() {
-        // Trazendo dados com conselheiros via FK
         const { data, error } = await sb.from('pessoas').select('*, conselheiros(nome)').order('created_at', { ascending: false });
         if(error) return;
         
@@ -453,16 +707,25 @@
         const tbody = document.getElementById('tabela-pessoas');
         tbody.innerHTML = '';
         lista.forEach(p => {
-            const conselheiroNome = p.conselheiros ? p.conselheiros.nome : '-';
+            const conselheiroNome = p.conselheiros ? `<span class="text-primary fw-medium"><i class="bi bi-person-check-fill me-1"></i>${p.conselheiros.nome}</span>` : '<span class="text-muted small">Pendente</span>';
+            
+            let badgeClass = 'bg-secondary';
+            if(p.decisao === 'Decisão') badgeClass = 'bg-primary';
+            else if(p.decisao === 'Reconciliação') badgeClass = 'bg-danger';
+            else if(p.decisao === 'Novo Nascimento') badgeClass = 'bg-success';
+            else if(p.decisao === 'Batismo Espírito Santo') badgeClass = 'bg-warning text-dark';
+
             const row = `<tr>
-                <td><strong>${p.nome}</strong></td>
-                <td>${p.telefone || ''}</td>
-                <td><span class="badge bg-primary">${p.decisao}</span></td>
+                <td class="ps-4">
+                    <div class="fw-bold text-dark">${p.nome}</div>
+                </td>
+                <td>${p.telefone || '<span class="text-muted">-</span>'}</td>
+                <td><span class="badge ${badgeClass} shadow-sm">${p.decisao}</span></td>
                 <td>${conselheiroNome}</td>
-                <td>${new Date(p.created_at).toLocaleDateString('pt-BR')}</td>
-                <td class="text-end">
-                    <i class="bi bi-pencil-square text-warning action-btn" onclick="editarPessoa('${p.id}')"></i>
-                    <i class="bi bi-trash text-danger action-btn" onclick="deleteItem('pessoas', '${p.id}', loadPessoas)"></i>
+                <td><small class="text-muted">${new Date(p.created_at).toLocaleDateString('pt-BR')}</small></td>
+                <td class="text-end pe-4">
+                    <button class="btn btn-sm btn-light text-warning shadow-sm border" onclick="editarPessoa('${p.id}')" title="Editar"><i class="bi bi-pencil-square"></i></button>
+                    <button class="btn btn-sm btn-light text-danger shadow-sm border ms-1" onclick="deleteItem('pessoas', '${p.id}', loadPessoas)" title="Excluir"><i class="bi bi-trash"></i></button>
                 </td>
             </tr>`;
             tbody.innerHTML += row;
@@ -482,7 +745,7 @@
 
     async function abrirModalPessoa() {
         document.getElementById('formPessoa').reset();
-        document.getElementById('p_id').value = ''; // Limpa o ID
+        document.getElementById('p_id').value = ''; 
         document.getElementById('tituloModalPessoa').innerText = 'Nova Pessoa';
         await carregarSelectConselheiros('p_conselheiro');
         new bootstrap.Modal(document.getElementById('modalPessoa')).show();
@@ -504,31 +767,20 @@
         new bootstrap.Modal(document.getElementById('modalPessoa')).show();
     }
 
-    // --- FORM PESSOA (CORRIGIDO) ---
+    // --- FORM PESSOA ---
     document.getElementById('formPessoa').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        // Captura o ID do hidden input (se existir, é edição)
         const id = document.getElementById('p_id').value;
-
-        // Monta os dados SEM O ID. Supabase cria o ID automaticamente no Insert.
         const dados = {
             nome: document.getElementById('p_nome').value,
             telefone: document.getElementById('p_telefone').value,
             endereco: document.getElementById('p_endereco').value,
             decisao: document.getElementById('p_decisao').value,
-            // O "|| null" evita erro de sintaxe UUID se enviar string vazia
             conselheiro_id: document.getElementById('p_conselheiro').value || null
         };
-
         let error;
-        if(id) {
-            // Se tem ID, é UPDATE
-            ({ error } = await sb.from('pessoas').update(dados).eq('id', id));
-        } else {
-            // Se não tem ID, é INSERT simples
-            ({ error } = await sb.from('pessoas').insert(dados));
-        }
+        if(id) { ({ error } = await sb.from('pessoas').update(dados).eq('id', id)); } 
+        else { ({ error } = await sb.from('pessoas').insert(dados)); }
 
         if(error) alert('Erro: ' + error.message);
         else {
@@ -550,7 +802,7 @@
         container.innerHTML = '';
 
         if(!data || data.length === 0) {
-            container.innerHTML = '<p class="text-muted">Nenhuma escala futura agendada.</p>';
+            container.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="bi bi-calendar-x display-4 d-block mb-3"></i> Nenhuma escala futura agendada.</div>';
             return;
         }
 
@@ -561,18 +813,30 @@
 
             const card = `
             <div class="col-md-4 mb-3">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <h6 class="text-primary fw-bold">${e.dia_culto}</h6>
-                            <div>
-                                <i class="bi bi-pencil-square text-warning action-btn" onclick="editarEscala('${e.id}')"></i>
-                                <i class="bi bi-trash text-danger action-btn" onclick="deleteItem('escalas', '${e.id}', loadEscalas)"></i>
+                <div class="card h-100 border-0 shadow-sm" style="transition: transform 0.2s;">
+                    <div class="card-body p-4 position-relative">
+                         <div class="position-absolute top-0 start-0 w-100 h-100 rounded" style="background: linear-gradient(180deg, rgba(255,255,255,0) 60%, rgba(90, 103, 216, 0.05) 100%); pointer-events: none;"></div>
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="badge bg-primary-subtle text-primary mb-3">${e.dia_culto}</span>
+                            <div class="dropdown">
+                                <button class="btn btn-link text-muted p-0" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
+                                <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                                    <li><a class="dropdown-item" href="#" onclick="editarEscala('${e.id}')"><i class="bi bi-pencil me-2"></i> Editar</a></li>
+                                    <li><a class="dropdown-item text-danger" href="#" onclick="deleteItem('escalas', '${e.id}', loadEscalas)"><i class="bi bi-trash me-2"></i> Excluir</a></li>
+                                </ul>
                             </div>
                         </div>
-                        <h3 class="card-title">${dataFmt}</h3>
-                        <p class="card-text fs-6 mb-1"><i class="bi bi-person"></i> ${nome1}</p>
-                        <p class="card-text fs-6"><i class="bi bi-person"></i> ${nome2}</p>
+                        <h3 class="card-title fw-bold mb-3">${dataFmt}</h3>
+                        <div class="d-flex flex-column gap-2">
+                            <div class="d-flex align-items-center bg-light p-2 rounded">
+                                <div class="bg-white rounded-circle p-1 shadow-sm me-2"><i class="bi bi-person-fill text-primary"></i></div>
+                                <span class="fw-medium">${nome1}</span>
+                            </div>
+                            <div class="d-flex align-items-center bg-light p-2 rounded">
+                                <div class="bg-white rounded-circle p-1 shadow-sm me-2"><i class="bi bi-person-fill text-info"></i></div>
+                                <span class="fw-medium">${nome2}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>`;
@@ -592,40 +856,30 @@
     async function editarEscala(id) {
         const { data } = await sb.from('escalas').select('*').eq('id', id).single();
         if(!data) return;
-
         await carregarSelectConselheiros('e_conselheiro1');
         await carregarSelectConselheiros('e_conselheiro2');
-        
         document.getElementById('e_id').value = data.id;
         document.getElementById('e_conselheiro1').value = data.conselheiro_id || "";
         document.getElementById('e_conselheiro2').value = data.conselheiro_id_2 || "";
         document.getElementById('e_culto').value = data.dia_culto;
         document.getElementById('e_data').value = data.data_escala;
-
         document.getElementById('tituloModalEscala').innerText = 'Editar Escala';
         new bootstrap.Modal(document.getElementById('modalEscala')).show();
     }
 
-    // --- FORM ESCALA (CORRIGIDO) ---
+    // --- FORM ESCALA ---
     document.getElementById('formEscala').addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('e_id').value;
-        
         const dados = {
-            // Importante: || null para não enviar string vazia em campo UUID
             conselheiro_id: document.getElementById('e_conselheiro1').value || null,
             conselheiro_id_2: document.getElementById('e_conselheiro2').value || null,
             dia_culto: document.getElementById('e_culto').value,
             data_escala: document.getElementById('e_data').value
         };
-
         let error;
-        if(id) {
-            ({ error } = await sb.from('escalas').update(dados).eq('id', id));
-        } else {
-            ({ error } = await sb.from('escalas').insert(dados));
-        }
-
+        if(id) { ({ error } = await sb.from('escalas').update(dados).eq('id', id)); } 
+        else { ({ error } = await sb.from('escalas').insert(dados)); }
         if(error) alert('Erro: ' + error.message);
         else {
             bootstrap.Modal.getInstance(document.getElementById('modalEscala')).hide();
@@ -640,11 +894,19 @@
         const lista = document.getElementById('lista-conselheiros');
         lista.innerHTML = '';
         data.forEach(c => {
-            lista.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                <div><strong>${c.nome}</strong> <br> <small class="text-muted">${c.telefone || ''}</small></div>
+            lista.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-3 border-0 border-bottom">
+                <div class="d-flex align-items-center">
+                    <div class="bg-primary-subtle text-primary rounded-circle p-2 me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <span class="fw-bold">${c.nome.charAt(0).toUpperCase()}</span>
+                    </div>
+                    <div>
+                        <strong class="d-block text-dark">${c.nome}</strong>
+                        <small class="text-muted"><i class="bi bi-whatsapp me-1"></i>${c.telefone || 'Sem contato'}</small>
+                    </div>
+                </div>
                 <div>
-                    <i class="bi bi-pencil-square text-warning action-btn" onclick="editarConselheiro('${c.id}', '${c.nome}', '${c.telefone}')"></i>
-                    <i class="bi bi-trash text-danger action-btn" onclick="deleteItem('conselheiros', '${c.id}', loadConselheiros)"></i>
+                    <button class="btn btn-sm btn-light text-warning shadow-sm border" onclick="editarConselheiro('${c.id}', '${c.nome}', '${c.telefone}')"><i class="bi bi-pencil-square"></i></button>
+                    <button class="btn btn-sm btn-light text-danger shadow-sm border ms-1" onclick="deleteItem('conselheiros', '${c.id}', loadConselheiros)"><i class="bi bi-trash"></i></button>
                 </div>
             </li>`;
         });
@@ -660,29 +922,19 @@
     function editarConselheiro(id, nome, telefone) {
         document.getElementById('c_id').value = id;
         document.getElementById('c_nome').value = nome;
-        // Trata null como string vazia para o input
         document.getElementById('c_telefone').value = (telefone && telefone !== 'null') ? telefone : '';
         document.getElementById('tituloModalConselheiro').innerText = 'Editar Conselheiro';
         new bootstrap.Modal(document.getElementById('modalConselheiro')).show();
     }
 
-    // --- FORM CONSELHEIRO (CORRIGIDO) ---
+    // --- FORM CONSELHEIRO ---
     document.getElementById('formConselheiro').addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('c_id').value;
-        
-        const dados = {
-            nome: document.getElementById('c_nome').value,
-            telefone: document.getElementById('c_telefone').value
-        };
-
+        const dados = { nome: document.getElementById('c_nome').value, telefone: document.getElementById('c_telefone').value };
         let error;
-        if(id) {
-            ({ error } = await sb.from('conselheiros').update(dados).eq('id', id));
-        } else {
-            ({ error } = await sb.from('conselheiros').insert(dados));
-        }
-
+        if(id) { ({ error } = await sb.from('conselheiros').update(dados).eq('id', id)); } 
+        else { ({ error } = await sb.from('conselheiros').insert(dados)); }
         if(error) alert('Erro: ' + error.message);
         else {
             bootstrap.Modal.getInstance(document.getElementById('modalConselheiro')).hide();
@@ -709,20 +961,19 @@
         const container = document.getElementById('container-versiculos');
         container.innerHTML = '';
 
-        if(data.length === 0) container.innerHTML = '<p class="text-muted p-3">Nenhum versículo cadastrado.</p>';
+        if(data.length === 0) container.innerHTML = '<div class="col-12 text-center text-muted py-5">Nenhum versículo cadastrado.</div>';
 
         data.forEach(v => {
             const card = `
             <div class="col-md-6 mb-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <blockquote class="blockquote mb-0">
-                            <p class="fs-6">"${v.texto}"</p>
-                            <footer class="blockquote-footer">${v.referencia}</footer>
-                        </blockquote>
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body p-4 text-center d-flex flex-column justify-content-center">
+                        <i class="bi bi-quote fs-1 text-warning opacity-25 mb-2"></i>
+                        <p class="fs-5 fst-italic mb-3">"${v.texto}"</p>
+                        <footer class="text-primary fw-bold small text-uppercase">― ${v.referencia}</footer>
                     </div>
-                    <div class="card-footer bg-white border-top-0 text-end">
-                         <button class="btn btn-sm btn-outline-danger" onclick="deleteItem('versiculos', '${v.id}', loadVersiculos)">Excluir</button>
+                    <div class="card-footer bg-white border-0 text-end pb-3 pe-3">
+                         <button class="btn btn-sm btn-outline-danger border-0" onclick="deleteItem('versiculos', '${v.id}', loadVersiculos)"><i class="bi bi-trash"></i> Remover</button>
                     </div>
                 </div>
             </div>`;
@@ -739,10 +990,7 @@
         e.preventDefault();
         const texto = document.getElementById('v_texto').value;
         const referencia = document.getElementById('v_referencia').value;
-
-        // Versículo não tem edição neste código, apenas insert
         const { error } = await sb.from('versiculos').insert({ texto, referencia });
-        
         if(error) alert('Erro: ' + error.message);
         else {
             bootstrap.Modal.getInstance(document.getElementById('modalVersiculo')).hide();
@@ -752,9 +1000,7 @@
 
     // Iniciar
     loadDashboard();
-
 </script>
 
 </body>
 </html>
-
